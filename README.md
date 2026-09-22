@@ -74,6 +74,12 @@ could be replaced without touching the API, and vice versa.
 **No CORS configuration.** In development the client calls same-origin `/api/*` paths
 and Vite proxies them to the API, so the browser never makes a cross-origin request.
 
+**Fonts are self-hosted.** Nunito and Nunito Sans are served from `/fonts` as
+latin-subset variable woff2 rather than from a font CDN. A third-party stylesheet
+holds up first paint behind a DNS lookup and TLS handshake to another origin
+before the font request even starts, which is the wrong trade on the older phones
+the brief targets.
+
 **SQLite via `node:sqlite`.** Real SQL and real persistence with zero dependencies and
 no native compilation step — it is part of Node itself. `apps/api/data/nosh.db` is
 generated on first boot and is not committed; delete it and it rebuilds and reseeds.
@@ -123,21 +129,27 @@ artwork embedded in the client brief:
 
 | File                | What it is                                                        |
 | ------------------- | ----------------------------------------------------------------- |
-| `nosh-logo.svg`     | Full lockup: NOSH plus the MEAL PLANNING PLATFORM strapline       |
 | `nosh-wordmark.svg` | NOSH on its own, for small sizes where the strapline is illegible |
 | `nosh-mark.svg`     | The icon alone - fork and knife curving into a bowl, flame, leaf  |
 
 The header pairs the mark with the compact wordmark, and the mark doubles as the
-favicon. The full lockup is not referenced by the app yet - it ships for the
-footer and share card that arrive with the feature work. All three load as
-separate files rather than being inlined, so they stay cacheable and out of the
-JS bundle - which matters given the audience is on older phones.
+favicon. Both load as separate files rather than being inlined, so they stay
+cacheable and out of the JS bundle - which matters given the audience is on older
+phones.
 
-All three are full colour, using the exact brand palette. The artwork was traced per
-colour region, so each fill is a separate path: Deep Teal for the cutlery and
-bowl, Flame Coral for the flame, Leaf for the leaf, Nosh Green for the wordmark
-and Cloud Grey for the strapline. The brief says never to recolour the mark, so
-the colours are fixed in the asset rather than inherited from CSS.
+Both use the exact brand palette. The artwork was traced per colour region, so
+each fill is a separate path: Deep Teal for the cutlery and bowl, Flame Coral for
+the flame, Leaf for the leaf, Nosh Green for the wordmark and Cloud Grey for the
+strapline.
+
+**On "never recolour".** The brief forbids recolouring, and these assets carry the
+palette values rather than the colours sampled from the supplied artwork, so it is
+worth recording why that is not a recolour. The artwork embedded in the brief is a
+JPEG, and its greens sample as a scatter of compression artefacts - `#60D19B`,
+`#5FD09C`, `#5FD09A`, `#5ED19A` and so on - clustered 5-7 RGB from `--nosh-green`
+`#62CC9B`. There is no single sampled colour to be faithful to, and choosing one
+would freeze an arbitrary artefact into the asset. The palette on the brief's
+visual identity page is the authority, and the SVGs reproduce it exactly.
 
 The brief also specifies clear space around the mark of at least the width of the
 "O" - about 18px at the size the header uses. The header keeps 24px on every

@@ -12,7 +12,7 @@
 CREATE TABLE IF NOT EXISTS recipes (
   id         TEXT PRIMARY KEY,
   name       TEXT    NOT NULL,
-  cuisine    TEXT,
+  cuisine    TEXT    NOT NULL,
   serves     INTEGER NOT NULL,
   meal_type  TEXT    NOT NULL, -- JSON array of MealType
   dietary    TEXT    NOT NULL, -- JSON array of DietaryPreference
