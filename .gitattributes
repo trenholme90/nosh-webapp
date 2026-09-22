@@ -1,0 +1,8 @@
+# Normalise to LF in the repository; Git still checks out native endings.
+# Keeps diffs stable between Windows development and the Linux CI runner.
+* text=auto eol=lf
+
+*.pdf binary
+*.png binary
+*.jpg binary
+*.db binary
