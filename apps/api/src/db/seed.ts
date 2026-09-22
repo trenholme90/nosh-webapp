@@ -4,8 +4,8 @@ import type { Recipe } from '@nosh/shared';
 import { SAMPLE_RECIPES_PATH } from './paths.ts';
 import { countRecipes } from './queries.ts';
 
-export function loadSampleRecipes(path: string = SAMPLE_RECIPES_PATH): Recipe[] {
-  return JSON.parse(readFileSync(path, 'utf8')) as Recipe[];
+export function loadSampleRecipes(): Recipe[] {
+  return JSON.parse(readFileSync(SAMPLE_RECIPES_PATH, 'utf8')) as Recipe[];
 }
 
 /**
@@ -14,8 +14,10 @@ export function loadSampleRecipes(path: string = SAMPLE_RECIPES_PATH): Recipe[] 
  * Idempotent: if anything is already there this is a no-op, so it is safe to
  * call on every boot. Returns the number of recipes inserted.
  */
-export function seedRecipes(db: DatabaseSync, recipes: Recipe[] = loadSampleRecipes()): number {
+export function seedRecipes(db: DatabaseSync): number {
   if (countRecipes(db) > 0) return 0;
+
+  const recipes = loadSampleRecipes();
 
   const insertRecipe = db.prepare(
     `INSERT INTO recipes (id, name, cuisine, serves, meal_type, dietary, tags, method, is_custom)

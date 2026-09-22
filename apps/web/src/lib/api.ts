@@ -17,7 +17,17 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
+/**
+ * Fetch and validate a JSON body.
+ *
+ * The caller passes the guard for the shape it expects rather than an unchecked
+ * type argument: a cast would make every downstream type a promise the API is
+ * merely trusted to keep.
+ */
+export async function apiGet<T>(
+  path: string,
+  isExpectedShape: (value: unknown) => value is T,
+): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
     headers: { Accept: 'application/json' },
   });
@@ -26,5 +36,11 @@ export async function apiGet<T>(path: string): Promise<T> {
     throw new ApiError(response.status, `GET ${path} failed with ${response.status}`);
   }
 
-  return (await response.json()) as T;
+  const body: unknown = await response.json();
+
+  if (!isExpectedShape(body)) {
+    throw new ApiError(response.status, `GET ${path} returned an unexpected body shape`);
+  }
+
+  return body;
 }

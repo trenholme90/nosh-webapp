@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { HealthResponse } from '@nosh/shared';
+import { isHealthResponse } from '@nosh/shared';
 import { apiGet } from './lib/api.ts';
 import './App.css';
 
-type Connection =
+type ConnectionState =
   { status: 'checking' } | { status: 'connected'; recipeCount: number } | { status: 'unavailable' };
 
 /**
@@ -13,12 +13,12 @@ type Connection =
  * and the client-to-API round trip so feature work has somewhere to land.
  */
 export function App() {
-  const [connection, setConnection] = useState<Connection>({ status: 'checking' });
+  const [connection, setConnection] = useState<ConnectionState>({ status: 'checking' });
 
   useEffect(() => {
     let cancelled = false;
 
-    apiGet<HealthResponse>('/health')
+    apiGet('/health', isHealthResponse)
       .then((health) => {
         if (!cancelled) setConnection({ status: 'connected', recipeCount: health.recipeCount });
       })
@@ -66,7 +66,7 @@ export function App() {
   );
 }
 
-function ApiStatus({ connection }: { connection: Connection }) {
+function ApiStatus({ connection }: { connection: ConnectionState }) {
   return (
     <p className={`status status--${connection.status}`} role="status">
       {connection.status === 'checking' && 'Checking the kitchen…'}

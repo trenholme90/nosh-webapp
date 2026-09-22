@@ -35,6 +35,14 @@ describe('App', () => {
     expect(await screen.findByText(/20 starter recipes ready/i)).toBeInTheDocument();
   });
 
+  it('degrades to a helpful message when the API answers with the wrong shape', async () => {
+    mockHealth({ status: 'ok' });
+
+    render(<App />);
+
+    expect(await screen.findByText(/api unavailable/i)).toBeInTheDocument();
+  });
+
   it('degrades to a helpful message when the API is down', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('connection refused')));
 

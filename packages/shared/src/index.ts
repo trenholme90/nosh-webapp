@@ -9,28 +9,8 @@
 /** Dietary filters the user can switch on. Closed: the brief drives the preferences UI off this list. */
 export type DietaryPreference = 'vegetarian' | 'vegan' | 'dairy-free' | 'gluten-free';
 
-export const DIETARY_PREFERENCES: readonly DietaryPreference[] = [
-  'vegetarian',
-  'vegan',
-  'dairy-free',
-  'gluten-free',
-] as const;
-
 /** Meal slots a recipe can fill. A recipe may suit more than one. */
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'dessert';
-
-export const MEAL_TYPES: readonly MealType[] = ['breakfast', 'lunch', 'dinner', 'dessert'] as const;
-
-/**
- * Free-form labels used for browsing, e.g. "quick", "batch-cook",
- * "freezer-friendly", "kid-friendly".
- *
- * Genuinely open: user recipes may introduce labels the starter set does not
- * cover, so this is `string`. A union ending in `(string & {})` was tried and
- * dropped - it collapses to `string` and checks nothing, while reading as if it
- * were closed.
- */
-export type RecipeTag = string;
 
 export interface Ingredient {
   item: string;
@@ -50,12 +30,21 @@ export interface Recipe {
   cuisine: string;
   mealType: MealType[];
   dietary: DietaryPreference[];
-  tags: RecipeTag[];
+  /**
+   * Free-form labels used for browsing, e.g. "quick", "batch-cook",
+   * "freezer-friendly", "kid-friendly".
+   *
+   * Genuinely open: user recipes may introduce labels the starter set does not
+   * cover, so these stay `string`. A union ending in `(string & {})` was tried
+   * and dropped - it collapses to `string` and checks nothing, while reading as
+   * if it were closed.
+   */
+  tags: string[];
   serves: number;
   ingredients: Ingredient[];
   /** Ordered method steps. */
   method: string[];
-  /** False for the built-in starter recipes, true for anything the user added. */
+  /** Mirrors the `is_custom` column: false for the starter recipes, true for anything the user added. */
   isCustom?: boolean;
 }
 
@@ -63,4 +52,16 @@ export interface Recipe {
 export interface HealthResponse {
   status: 'ok';
   recipeCount: number;
+}
+
+/**
+ * Runtime check for `HealthResponse`.
+ *
+ * Lives beside the type so both sides of the wire share one definition of the
+ * contract: the client cannot assert the shape without also checking it.
+ */
+export function isHealthResponse(value: unknown): value is HealthResponse {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Partial<Record<keyof HealthResponse, unknown>>;
+  return candidate.status === 'ok' && typeof candidate.recipeCount === 'number';
 }

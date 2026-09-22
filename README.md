@@ -127,20 +127,22 @@ on a green button must therefore be charcoal, not white.
 `apps/web/public/brand/` holds the logo assets, traced to SVG from the raster
 artwork embedded in the client brief:
 
-| File                | What it is                                                        |
-| ------------------- | ----------------------------------------------------------------- |
-| `nosh-wordmark.svg` | NOSH on its own, for small sizes where the strapline is illegible |
-| `nosh-mark.svg`     | The icon alone - fork and knife curving into a bowl, flame, leaf  |
+| File                | What it is                                                       |
+| ------------------- | ---------------------------------------------------------------- |
+| `nosh-wordmark.svg` | The NOSH lettering on its own, for pairing with the mark         |
+| `nosh-mark.svg`     | The icon alone - fork and knife curving into a bowl, flame, leaf |
 
-The header pairs the mark with the compact wordmark, and the mark doubles as the
+The header pairs the mark with the wordmark, and the mark doubles as the
 favicon. Both load as separate files rather than being inlined, so they stay
 cacheable and out of the JS bundle - which matters given the audience is on older
 phones.
 
 Both use the exact brand palette. The artwork was traced per colour region, so
 each fill is a separate path: Deep Teal for the cutlery and bowl, Flame Coral for
-the flame, Leaf for the leaf, Nosh Green for the wordmark and Cloud Grey for the
-strapline.
+the flame and Leaf for the leaf in the mark, and Nosh Green for the wordmark.
+The brief's full lockup also carries a "MEAL PLANNING PLATFORM" strapline in
+Cloud Grey; neither asset here includes it, so nothing in the repo uses that
+colour yet.
 
 **On "never recolour".** The brief forbids recolouring, and these assets carry the
 palette values rather than the colours sampled from the supplied artwork, so it is
