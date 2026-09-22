@@ -37,7 +37,7 @@ export function App() {
         <div className="app__header-inner">
           <div className="brand">
             {/* The mark is decorative: the wordmark beside it carries the name. */}
-            <img className="brand__mark" src="/brand/nosh-mark.svg" alt="" width="32" height="36" />
+            <img className="brand__mark" src="/brand/nosh-mark.svg" alt="" width="39" height="44" />
             <img
               className="brand__wordmark"
               src="/brand/nosh-wordmark.svg"

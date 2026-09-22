@@ -21,6 +21,7 @@ jobs:
       - run: npm ci
 
       # Cheapest and most common failures report first.
+      - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run build

@@ -1,27 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
 import type { Recipe } from '@nosh/shared';
-
-const here = dirname(fileURLToPath(import.meta.url));
-
-/** The starter recipes supplied by the client. */
-export const SAMPLE_RECIPES_PATH = join(
-  here,
-  '..',
-  '..',
-  'data',
-  'project-nosh-sample-recipes.json',
-);
+import { SAMPLE_RECIPES_PATH } from './paths.ts';
+import { countRecipes } from './queries.ts';
 
 export function loadSampleRecipes(path: string = SAMPLE_RECIPES_PATH): Recipe[] {
   return JSON.parse(readFileSync(path, 'utf8')) as Recipe[];
-}
-
-export function countRecipes(db: DatabaseSync): number {
-  const row = db.prepare('SELECT COUNT(*) AS count FROM recipes').get() as { count: number };
-  return row.count;
 }
 
 /**

@@ -6,13 +6,14 @@
 
 .app__header {
   /* The brief asks for clear space around the mark of at least the width of the
-     "O", which is ~18px at this wordmark size. 24px clears it on every side. */
+     "O", which is ~18px at this wordmark size. 24px clears it on every side: the
+     block padding here, and the inline gutter baked into --content-width. */
   padding-block: var(--space-6);
   background-color: var(--colour-surface-inverse);
 }
 
 .app__header-inner {
-  width: min(100% - 2rem, 48rem);
+  width: var(--content-width);
   margin-inline: auto;
 }
 
@@ -23,7 +24,8 @@
 }
 
 /* Width and height are set on the elements too, so the header does not shift
-   as the logos load - the audience is on older phones and slower connections. */
+   as the logos load - the audience is on older phones and slower connections.
+   They must match the rendered size, not the source viewBox. */
 .brand__mark {
   display: block;
   height: 44px;
@@ -37,7 +39,7 @@
 }
 
 .app__main {
-  width: min(100% - 2rem, 48rem);
+  width: var(--content-width);
   margin-inline: auto;
   padding-block: var(--space-8);
 }
@@ -51,7 +53,7 @@
   margin-top: var(--space-6);
   padding: var(--space-4);
   border-left: 4px solid var(--colour-badge);
-  background-color: #fbfaf0;
+  background-color: var(--colour-surface-badge-soft);
   border-radius: var(--radius);
 }
 
@@ -66,10 +68,10 @@
 
 .status--connected {
   border-color: var(--colour-accent);
-  background-color: #eefaf4;
+  background-color: var(--colour-surface-accent-soft);
 }
 
 .status--unavailable {
   border-color: var(--colour-warning);
-  background-color: #fdeee8;
+  background-color: var(--colour-surface-warning-soft);
 }

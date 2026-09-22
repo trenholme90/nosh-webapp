@@ -1,13 +1,7 @@
 import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
+import { DEFAULT_DB_PATH, SCHEMA_PATH } from './paths.ts';
 import { seedRecipes } from './seed.ts';
-
-const here = dirname(fileURLToPath(import.meta.url));
-
-export const DEFAULT_DB_PATH = join(here, '..', '..', 'data', 'nosh.db');
-const SCHEMA_PATH = join(here, 'schema.sql');
 
 /**
  * Open a database, apply the schema and seed the starter recipes if it is empty.

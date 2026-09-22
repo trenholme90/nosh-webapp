@@ -17,10 +17,9 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
+export async function apiGet<T>(path: string): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
     headers: { Accept: 'application/json' },
-    ...init,
   });
 
   if (!response.ok) {

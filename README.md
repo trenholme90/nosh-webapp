@@ -37,16 +37,27 @@ API is up it reports how many starter recipes are loaded.
 
 Run these from the repo root.
 
-| Script              | What it does                                  |
-| ------------------- | --------------------------------------------- |
-| `npm run dev`       | Runs the API and the web client together      |
-| `npm run dev:api`   | API only, on <http://localhost:4000>          |
-| `npm run dev:web`   | Web client only, on <http://localhost:5173>   |
-| `npm test`          | Runs the Vitest suites in both apps and exits |
-| `npm run typecheck` | Type-checks every workspace                   |
-| `npm run lint`      | ESLint across the repo                        |
-| `npm run build`     | Production build of the web client            |
-| `npm run format`    | Formats with Prettier                         |
+| Script                 | What it does                                    |
+| ---------------------- | ----------------------------------------------- |
+| `npm run dev`          | Runs the API and the web client together        |
+| `npm run dev:api`      | API only, on <http://localhost:4000>            |
+| `npm run dev:web`      | Web client only, on <http://localhost:5173>     |
+| `npm test`             | Runs the Vitest suites in both apps and exits   |
+| `npm run typecheck`    | Type-checks every workspace                     |
+| `npm run lint`         | ESLint across the repo                          |
+| `npm run build`        | Production build of the web client              |
+| `npm run format`       | Formats with Prettier                           |
+| `npm run format:check` | Fails if anything is unformatted (CI runs this) |
+
+## Configuration
+
+Nothing needs configuring to run locally — the defaults _are_ the development
+setup. Two environment variables are read if you set them:
+
+| Variable            | Read by    | Default | What it does                                                                                                                                                                                                                                                                                             |
+| ------------------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`              | `apps/api` | `4000`  | Port the API listens on. Read straight from the process environment; there is no dotenv loader, so export it or prefix the command: `PORT=4100 npm run dev:api`.                                                                                                                                         |
+| `VITE_API_BASE_URL` | `apps/web` | `/api`  | Base URL the client prefixes onto API requests. Leave it unset in development — the client calls same-origin `/api/*` and Vite proxies them. Set it only when the API is served from another origin. Vite reads it from `apps/web/.env`; copy [`apps/web/.env.example`](apps/web/.env.example) to start. |
 
 ## How it is put together
 
@@ -85,7 +96,7 @@ apps/
     src/
       app.ts           app factory — mounts routes, no listen()
       index.ts         process entrypoint — port, listen, shutdown
-      db/              schema.sql, connection, seeding
+      db/              schema.sql, paths, connection, seeding, read queries
       routes/
       __tests__/
   web/                 Vite + React + TypeScript client
@@ -117,18 +128,20 @@ artwork embedded in the client brief:
 | `nosh-mark.svg`     | The icon alone - fork and knife curving into a bowl, flame, leaf  |
 
 The header pairs the mark with the compact wordmark, and the mark doubles as the
-favicon. They load as separate files rather than being inlined, so they stay
-cacheable and out of the JS bundle - which matters given the audience is on older
-phones.
+favicon. The full lockup is not referenced by the app yet - it ships for the
+footer and share card that arrive with the feature work. All three load as
+separate files rather than being inlined, so they stay cacheable and out of the
+JS bundle - which matters given the audience is on older phones.
 
-Both are full colour, using the exact brand palette. The artwork was traced per
+All three are full colour, using the exact brand palette. The artwork was traced per
 colour region, so each fill is a separate path: Deep Teal for the cutlery and
 bowl, Flame Coral for the flame, Leaf for the leaf, Nosh Green for the wordmark
 and Cloud Grey for the strapline. The brief says never to recolour the mark, so
 the colours are fixed in the asset rather than inherited from CSS.
 
 The brief also specifies clear space around the mark of at least the width of the
-"O".
+"O" - about 18px at the size the header uses. The header keeps 24px on every
+side: block padding on the bar, and the inline gutter in `--content-width`.
 
 ## Testing
 

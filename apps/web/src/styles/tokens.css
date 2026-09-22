@@ -45,6 +45,19 @@
   --colour-badge: var(--leaf);
   --colour-border: #dde2e3;
 
+  /* Soft surface washes - tinted backgrounds for notes and status pills. Each is
+     the brand hue at low saturation on white, so charcoal body text still clears
+     AA on them (>= 11:1). */
+  --colour-surface-accent-soft: #eefaf4;
+  --colour-surface-warning-soft: #fdeee8;
+  --colour-surface-badge-soft: #fbfaf0;
+
+  /* Layout */
+  /* One measure shared by the header and the main column so the logo lines up
+     with the content beneath it. The 3rem inline gutter leaves 24px each side,
+     which is the clear space the brief requires around the mark. */
+  --content-width: min(100% - 3rem, 48rem);
+
   /* Typography */
   --font-heading: 'Nunito', Arial, sans-serif;
   --font-body: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;

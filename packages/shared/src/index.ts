@@ -21,9 +21,16 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'dessert';
 
 export const MEAL_TYPES: readonly MealType[] = ['breakfast', 'lunch', 'dinner', 'dessert'] as const;
 
-/** Free-form labels used for browsing. Open-ended: user recipes may introduce new ones. */
-export type RecipeTag =
-  'quick' | 'batch-cook' | 'freezer-friendly' | 'kid-friendly' | (string & {});
+/**
+ * Free-form labels used for browsing, e.g. "quick", "batch-cook",
+ * "freezer-friendly", "kid-friendly".
+ *
+ * Genuinely open: user recipes may introduce labels the starter set does not
+ * cover, so this is `string`. A union ending in `(string & {})` was tried and
+ * dropped - it collapses to `string` and checks nothing, while reading as if it
+ * were closed.
+ */
+export type RecipeTag = string;
 
 export interface Ingredient {
   item: string;

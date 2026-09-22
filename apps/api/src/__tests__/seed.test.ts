@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { createDatabase } from '../db/client.ts';
-import { countRecipes, loadSampleRecipes, seedRecipes } from '../db/seed.ts';
+import { countRecipes } from '../db/queries.ts';
+import { loadSampleRecipes, seedRecipes } from '../db/seed.ts';
 
 const countIngredients = (db: DatabaseSync): number =>
   (db.prepare('SELECT COUNT(*) AS count FROM ingredients').get() as { count: number }).count;
