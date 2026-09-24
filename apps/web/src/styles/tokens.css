@@ -1,0 +1,77 @@
+/*
+ * Nosh brand tokens - from the visual identity page of the client brief.
+ *
+ * ACCESSIBILITY: the brief requires WCAG AA, on older and smaller phones.
+ * Measured contrast ratios against the two permitted backgrounds:
+ *
+ *                       on white     on charcoal
+ *   Nosh Green          1.98 : 1  X    6.13 : 1  AA
+ *   Deep Teal           3.02 : 1  L    4.06 : 1  AA-large
+ *   Flame Coral         2.80 : 1  X    4.33 : 1  AA-large
+ *   Leaf                1.77 : 1  X    6.85 : 1  AA
+ *   Cloud Grey          1.83 : 1  X    6.48 : 1  AA
+ *   Nosh Charcoal      12.13 : 1  AA      -
+ *
+ *   AA = passes for body text (>= 4.5:1)
+ *   L  = large text and UI components only (>= 3:1)
+ *   X  = decorative use only, never text
+ *
+ * The practical rules that fall out of this:
+ *   - Body text is charcoal on white, or cloud grey / white on charcoal.
+ *   - Green is a BACKGROUND colour. Text on a green button must be charcoal
+ *     (6.13:1); white on green is only 1.98:1 and fails.
+ *   - Leaf and coral are badge and highlight colours on charcoal, not body text.
+ */
+
+:root {
+  /* Brand palette */
+  --nosh-green: #62cc9b;
+  --deep-teal: #3aa58f;
+  --nosh-charcoal: #2e373e;
+  --flame-coral: #f3764b;
+  --leaf: #d5c52d;
+  --cloud-grey: #b7bfc0;
+  --white: #ffffff;
+
+  /* Semantic roles - prefer these in components so a palette change is one edit */
+  --colour-surface: var(--white);
+  --colour-surface-inverse: var(--nosh-charcoal);
+  --colour-text: var(--nosh-charcoal);
+  --colour-text-inverse: var(--white);
+  --colour-text-muted-on-dark: var(--cloud-grey);
+  --colour-accent: var(--nosh-green);
+  --colour-accent-text: var(--nosh-charcoal); /* text that sits ON --colour-accent */
+  --colour-warning: var(--flame-coral);
+  --colour-badge: var(--leaf);
+  --colour-border: #dde2e3;
+  --colour-focus: var(--deep-teal); /* 3.02:1 on white - clears the 3:1 UI minimum */
+
+  /* Soft surface washes - tinted backgrounds for notes and status pills. Each is
+     the brand hue at low saturation on white, so charcoal body text still clears
+     AA on them (>= 11:1). */
+  --colour-surface-accent-soft: #eefaf4;
+  --colour-surface-warning-soft: #fdeee8;
+  --colour-surface-badge-soft: #fbfaf0;
+
+  /* Layout */
+  /* One measure shared by the header and the main column so the logo lines up
+     with the content beneath it. The 4rem inline gutter leaves 32px each side,
+     clearing the brief's minimum space around the mark: the width of the "O",
+     which is ~24.4px at the header's wordmark size. */
+  --content-width: min(100% - 4rem, 48rem);
+
+  /* Typography */
+  --font-heading: 'Nunito', Arial, sans-serif;
+  --font-body: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+
+  /* Spacing - 4px base */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --radius: 0.75rem;
+  --radius-pill: 999px;
+}

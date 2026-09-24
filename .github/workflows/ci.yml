@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Pinned to the floor declared in package.json `engines`. Node 24 is the floor
+          # because `node:sqlite` only became flag-free after Node 23.4.
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Cheapest and most common failures report first.
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test

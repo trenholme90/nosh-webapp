@@ -1,0 +1,77 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app__header {
+  /* The brief asks for clear space around the mark of at least the width of the
+     "O", which is ~24.4px at this wordmark size. 32px clears it on every side: the
+     block padding here, and the inline gutter baked into --content-width. */
+  padding-block: var(--space-8);
+  background-color: var(--colour-surface-inverse);
+}
+
+.app__header-inner {
+  width: var(--content-width);
+  margin-inline: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Width and height are set on the elements too, so the header does not shift
+   as the logos load - the audience is on older phones and slower connections.
+   They must match the rendered size, not the source viewBox. */
+.brand__mark {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+.brand__wordmark {
+  display: block;
+  height: 24px;
+  width: auto;
+}
+
+.app__main {
+  width: var(--content-width);
+  margin-inline: auto;
+  padding-block: var(--space-8);
+}
+
+.lede {
+  margin-top: var(--space-4);
+  font-size: 1.125rem;
+}
+
+.scaffold-note {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border-left: 4px solid var(--colour-badge);
+  background-color: var(--colour-surface-badge-soft);
+  border-radius: var(--radius);
+}
+
+.status {
+  margin-top: var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius-pill);
+  display: inline-block;
+  font-size: 0.9375rem;
+}
+
+.status--connected {
+  border-color: var(--colour-accent);
+  background-color: var(--colour-surface-accent-soft);
+}
+
+.status--unavailable {
+  border-color: var(--colour-warning);
+  background-color: var(--colour-surface-warning-soft);
+}

@@ -1,0 +1,29 @@
+/*
+ * Self-hosted brand typefaces.
+ *
+ * Served from this origin rather than a font CDN. The brief calls out older,
+ * smaller phones, and a third-party stylesheet holds up first paint behind a
+ * DNS lookup and TLS handshake to another host before the font request even
+ * starts. Each file is the latin subset of the variable font, so one file
+ * covers every weight the design uses.
+ *
+ * No `unicode-range`: with a single face per family there is nothing to split
+ * the range between, so declaring it would only restate what the subset already
+ * encodes - twice, once per family.
+ */
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url('/fonts/nunito-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Nunito Sans';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/nunito-sans-latin.woff2') format('woff2');
+}
