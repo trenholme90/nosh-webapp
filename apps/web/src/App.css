@@ -6,9 +6,9 @@
 
 .app__header {
   /* The brief asks for clear space around the mark of at least the width of the
-     "O", which is ~18px at this wordmark size. 24px clears it on every side: the
+     "O", which is ~24.4px at this wordmark size. 32px clears it on every side: the
      block padding here, and the inline gutter baked into --content-width. */
-  padding-block: var(--space-6);
+  padding-block: var(--space-8);
   background-color: var(--colour-surface-inverse);
 }
 

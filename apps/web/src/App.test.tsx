@@ -25,6 +25,9 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { name: /meal planning that fits your budget/i }),
     ).toBeInTheDocument();
+
+    // Let the health check settle so its state update lands inside the test.
+    await screen.findByText(/starter recipes ready/i);
   });
 
   it('reports the recipe count once the API answers', async () => {

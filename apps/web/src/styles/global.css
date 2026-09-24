@@ -46,7 +46,7 @@ h1 {
 }
 
 :focus-visible {
-  outline: 3px solid var(--deep-teal);
+  outline: 3px solid var(--colour-focus);
   outline-offset: 2px;
 }
 

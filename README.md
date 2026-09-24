@@ -14,7 +14,7 @@ Built for the Enablis engineering challenge against the brief in
 
 - **Node.js 24 or newer.** The API uses Node's built-in `node:sqlite` module. It
   landed in 22.5 behind `--experimental-sqlite` and only became usable without that
-  flag from 23.4, so 24 is the floor rather than the current LTS line generally.
+  flag from 23.4, so Node 24 (the current LTS) is the minimum.
 - npm (ships with Node).
 
 Check with:
@@ -54,10 +54,10 @@ Run these from the repo root.
 Nothing needs configuring to run locally — the defaults _are_ the development
 setup. Two environment variables are read if you set them:
 
-| Variable            | Read by    | Default | What it does                                                                                                                                                                                                                                                                                             |
-| ------------------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`              | `apps/api` | `4000`  | Port the API listens on. Read straight from the process environment; there is no dotenv loader, so export it or prefix the command: `PORT=4100 npm run dev:api`.                                                                                                                                         |
-| `VITE_API_BASE_URL` | `apps/web` | `/api`  | Base URL the client prefixes onto API requests. Leave it unset in development — the client calls same-origin `/api/*` and Vite proxies them. Set it only when the API is served from another origin. Vite reads it from `apps/web/.env`; copy [`apps/web/.env.example`](apps/web/.env.example) to start. |
+| Variable            | Read by    | Default | What it does                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------- | ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`              | `apps/api` | `4000`  | Port the API listens on. Read straight from the process environment; there is no dotenv loader, so export it or prefix the command: `PORT=4100 npm run dev:api`.                                                                                                                                                                                                                               |
+| `VITE_API_BASE_URL` | `apps/web` | `/api`  | Base URL the client prefixes onto API requests. Leave it unset in development — the client calls same-origin `/api/*` and Vite proxies them. Set it only when the API is served from another origin, and note the API has no CORS configuration yet, so that setup needs CORS added first. Vite reads it from `apps/web/.env`; copy [`apps/web/.env.example`](apps/web/.env.example) to start. |
 
 ## How it is put together
 
@@ -154,7 +154,7 @@ would freeze an arbitrary artefact into the asset. The palette on the brief's
 visual identity page is the authority, and the SVGs reproduce it exactly.
 
 The brief also specifies clear space around the mark of at least the width of the
-"O" - about 18px at the size the header uses. The header keeps 24px on every
+"O" - about 24.4px at the size the header uses. The header keeps 32px on every
 side: block padding on the bar, and the inline gutter in `--content-width`.
 
 ## Testing
@@ -171,6 +171,8 @@ the round trip). Feature tests arrive with the features.
 The client supplied 20 starter recipes in
 `apps/api/data/project-nosh-sample-recipes.json`. They are loaded into SQLite on first
 boot. Worth noting for the shopping-list work: ingredient names are already consistent
-and lowercased across recipes (`butter` appears in 7, `onion` in 7), so aggregation can
-key on the name directly. Some ingredients have a null quantity or unit, which any
-summing logic will need to handle.
+and lowercased across recipes (`butter` appears in 7, `onion` in 7), so grouping can
+key on the name. Units are not consistent, though: `milk` appears in ml and tbsp,
+`coconut milk` in tins and ml, `salad leaves` in handfuls and g, and `chicken breast`
+in g and with no unit. Some ingredients also have a null quantity or unit. Summing
+quantities will therefore need unit handling, not just a group-by on name.

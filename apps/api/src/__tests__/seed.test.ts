@@ -40,11 +40,9 @@ describe('seedRecipes', () => {
   });
 
   it('preserves nullable quantities and units from the source data', () => {
-    const source = loadSampleRecipes();
-    const nullQuantities = source
-      .flatMap((r) => r.ingredients)
-      .filter((i) => i.quantity === null).length;
-    const nullUnits = source.flatMap((r) => r.ingredients).filter((i) => i.unit === null).length;
+    const ingredients = loadSampleRecipes().flatMap((r) => r.ingredients);
+    const nullQuantities = ingredients.filter((i) => i.quantity === null).length;
+    const nullUnits = ingredients.filter((i) => i.unit === null).length;
 
     const stored = db
       .prepare(

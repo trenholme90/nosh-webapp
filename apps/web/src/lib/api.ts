@@ -7,16 +7,6 @@
 
 const BASE_URL: string = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
-export class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    message: string,
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
-
 /**
  * Fetch and validate a JSON body.
  *
@@ -33,13 +23,13 @@ export async function apiGet<T>(
   });
 
   if (!response.ok) {
-    throw new ApiError(response.status, `GET ${path} failed with ${response.status}`);
+    throw new Error(`GET ${path} failed with ${response.status}`);
   }
 
   const body: unknown = await response.json();
 
   if (!isExpectedShape(body)) {
-    throw new ApiError(response.status, `GET ${path} returned an unexpected body shape`);
+    throw new Error(`GET ${path} returned an unexpected body shape`);
   }
 
   return body;

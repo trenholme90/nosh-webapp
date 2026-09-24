@@ -3,6 +3,11 @@ import { createDatabase } from './db/client.ts';
 
 const port = Number(process.env['PORT'] ?? 4000);
 
+// listen(NaN) silently binds a random port, so reject a bad value up front.
+if (!Number.isInteger(port) || port < 0 || port > 65535) {
+  throw new Error(`PORT must be an integer from 0 to 65535, got "${process.env['PORT']}"`);
+}
+
 const db = createDatabase();
 const server = createApp(db).listen(port, () => {
   console.log(`[nosh-api] listening on http://localhost:${port}`);

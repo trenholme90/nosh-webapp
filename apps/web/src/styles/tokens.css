@@ -44,6 +44,7 @@
   --colour-warning: var(--flame-coral);
   --colour-badge: var(--leaf);
   --colour-border: #dde2e3;
+  --colour-focus: var(--deep-teal); /* 3.02:1 on white - clears the 3:1 UI minimum */
 
   /* Soft surface washes - tinted backgrounds for notes and status pills. Each is
      the brand hue at low saturation on white, so charcoal body text still clears
@@ -54,9 +55,10 @@
 
   /* Layout */
   /* One measure shared by the header and the main column so the logo lines up
-     with the content beneath it. The 3rem inline gutter leaves 24px each side,
-     which is the clear space the brief requires around the mark. */
-  --content-width: min(100% - 3rem, 48rem);
+     with the content beneath it. The 4rem inline gutter leaves 32px each side,
+     clearing the brief's minimum space around the mark: the width of the "O",
+     which is ~24.4px at the header's wordmark size. */
+  --content-width: min(100% - 4rem, 48rem);
 
   /* Typography */
   --font-heading: 'Nunito', Arial, sans-serif;
