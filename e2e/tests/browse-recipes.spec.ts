@@ -1,7 +1,7 @@
 import { expect, test } from '../support/fixtures.ts';
 
 test.describe('Browsing recipes', () => {
-  test('the home page lists every starter recipe', async ({ page }) => {
+  test('the home page lists every starter recipe', async ({ page, expectNoA11yViolations }) => {
     await page.goto('/');
 
     await expect(page).toHaveURL('/recipes');
@@ -12,6 +12,8 @@ test.describe('Browsing recipes', () => {
     await expect(
       starters.getByRole('listitem').filter({ has: page.getByRole('heading') }),
     ).toHaveCount(20);
+
+    await expectNoA11yViolations(page);
   });
 
   test('a recipe card shows what it suits at a glance', async ({ page }) => {
@@ -23,7 +25,10 @@ test.describe('Browsing recipes', () => {
     await expect(card).toContainText('Serves 2 · British · Breakfast');
   });
 
-  test('opening a recipe shows its ingredients and method', async ({ page }) => {
+  test('opening a recipe shows its ingredients and method', async ({
+    page,
+    expectNoA11yViolations,
+  }) => {
     await page.goto('/recipes');
 
     await page.getByRole('link', { name: 'Full English Breakfast' }).click();
@@ -44,6 +49,8 @@ test.describe('Browsing recipes', () => {
 
     const steps = page.getByRole('region', { name: 'Method' }).getByRole('listitem');
     await expect(steps.first()).toContainText('Heat a little oil');
+
+    await expectNoA11yViolations(page);
   });
 
   test('dietary badges show on vegetarian recipes', async ({ page, request }) => {
@@ -88,10 +95,15 @@ test.describe('Browsing recipes', () => {
     ).toBeVisible();
   });
 
-  test('an unknown recipe shows a friendly not-found page', async ({ page }) => {
+  test('an unknown recipe shows a friendly not-found page', async ({
+    page,
+    expectNoA11yViolations,
+  }) => {
     await page.goto('/recipes/no-such-recipe');
 
     await expect(page.getByRole('heading', { name: 'Nothing here' })).toBeVisible();
+    await expectNoA11yViolations(page);
+
     await page.getByRole('link', { name: 'Browse recipes' }).click();
     await expect(page).toHaveURL('/recipes');
   });

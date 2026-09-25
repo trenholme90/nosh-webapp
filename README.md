@@ -182,7 +182,10 @@ Two layers, both run in CI:
 The E2E tests run in parallel against one API, so each one creates its own
 uniquely named recipes and deletes them afterwards. New tests must not assume the
 list of custom recipes is empty. Find elements by role and label, the way a
-screen-reader user would, rather than by CSS class.
+screen-reader user would, rather than by CSS class. Accessibility checks sit inside
+the journey tests, not in a separate spec: when a test reaches a new page or state,
+it calls `expectNoA11yViolations(page)` there, so each feature's spec covers its own
+accessibility.
 
 ## Data
 

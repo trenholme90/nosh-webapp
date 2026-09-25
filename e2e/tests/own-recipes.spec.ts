@@ -6,6 +6,7 @@ test.describe('Adding your own recipe', () => {
     page,
     request,
     uniqueName,
+    expectNoA11yViolations,
   }) => {
     const name = uniqueName('Nan’s Lentil Soup');
 
@@ -44,6 +45,7 @@ test.describe('Adding your own recipe', () => {
       'Soften the onions.',
       'Add the lentils and simmer for 20 minutes.',
     ]);
+    await expectNoA11yViolations(page);
 
     // It survives a reload, so it really was stored.
     await page.reload();
@@ -56,12 +58,20 @@ test.describe('Adding your own recipe', () => {
     await expect(
       page.getByRole('region', { name: /your recipes/i }).getByRole('link', { name }),
     ).toBeVisible();
+    // With a custom recipe listed, both sections of the list are checked.
+    await expectNoA11yViolations(page);
 
     await request.delete(`/api/recipes/${id}`);
   });
 
-  test('an incomplete form explains what to fix and saves nothing', async ({ page }) => {
+  test('an incomplete form explains what to fix and saves nothing', async ({
+    page,
+    expectNoA11yViolations,
+  }) => {
     await page.goto('/recipes/new');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expectNoA11yViolations(page);
+
     await page.getByLabel('Serves').fill('0');
     await page.getByLabel('Amount for ingredient 1').fill('lots');
     await page.getByRole('button', { name: 'Save recipe' }).click();
@@ -77,6 +87,7 @@ test.describe('Adding your own recipe', () => {
       'Ingredient 1: Amount must be a number above 0, or left blank',
       'Step 1: Write this step, or remove it',
     ]);
+    await expectNoA11yViolations(page);
 
     // Each message links to its field, and the field is marked invalid.
     await summary.getByRole('link', { name: 'Give your recipe a name' }).click();
@@ -168,16 +179,20 @@ test.describe('Editing your own recipe', () => {
 });
 
 test.describe('Deleting your own recipe', () => {
-  test('asks first, then removes it', async ({ page, createRecipe }) => {
+  test('asks first, then removes it', async ({ page, createRecipe, expectNoA11yViolations }) => {
     const recipe = await createRecipe();
 
     await page.goto(`/recipes/${recipe.id}`);
+    await expect(page.getByRole('heading', { level: 1, name: recipe.name })).toBeVisible();
+    await expectNoA11yViolations(page);
+
     await page.getByRole('button', { name: 'Delete' }).click();
 
     const confirm = page.getByRole('group', {
       name: `Delete “${recipe.name}”? This can’t be undone.`,
     });
     await expect(confirm).toBeVisible();
+    await expectNoA11yViolations(page);
     await confirm.getByRole('button', { name: 'Yes, delete it' }).click();
 
     await expect(page).toHaveURL('/recipes');

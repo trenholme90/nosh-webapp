@@ -29,7 +29,11 @@ interface Fixtures {
   uniqueName: (base: string) => string;
   /** Create a custom recipe through the API, deleted again when the test ends. */
   createRecipe: (overrides?: Partial<RecipeInput>) => Promise<Recipe>;
-  /** Fail the test on any WCAG 2.2 A or AA violation axe finds on the page as it stands. */
+  /**
+   * Fail the test on any WCAG 2.2 A or AA violation axe finds on the page as it
+   * stands. Call it inside journey tests wherever a new page or state appears -
+   * there is deliberately no separate accessibility spec to keep in step.
+   */
   expectNoA11yViolations: (page: Page) => Promise<void>;
 }
 
