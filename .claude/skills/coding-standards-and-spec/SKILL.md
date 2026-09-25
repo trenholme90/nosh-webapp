@@ -73,3 +73,13 @@ test('an unknown recipe shows a friendly not-found page', async ({
 Do not edit existing tests except for selectors changing. If you need to do so, ask for permission
 
 Run mutation testing when coding has finished to make sure tests are relevant and pass/fail when expected
+
+Never skip or drop a valid test case because the data isn't in the state it needs. Seed the data inside the test so it can assert properly. Use the existing helpers first:
+
+- E2E: the `createRecipe` fixture in `e2e/support/fixtures.ts`, which creates through the API and cleans up afterwards. E2E tests run in parallel against one API, so give seeded data a unique name (`uniqueName`) and never depend on or change data another test could see.
+- API: `useMemoryDb()` in `apps/api/src/__tests__/memory-db.ts` gives each test a fresh in-memory database, already seeded with the sample recipes. Add what else the test needs through the API (`api().post(...)`), as the existing tests do. Only query the database directly for a state the API can't create.
+- Web unit tests: fake the API and pass the test its own data, e.g. the `recipes` and `preferences` options on `mockApi` in `apps/web/src/pages/RecipeListPage.test.tsx`.
+
+Some states can't be reached against the shared E2E API because the starter recipes are fixed and can't be deleted, e.g. no recipe suiting a diet. Test those in a web unit test with a faked API instead of dropping them.
+
+If no helper fits, add one alongside the existing ones rather than seeding inline in several tests.
