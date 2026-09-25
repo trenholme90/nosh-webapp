@@ -27,6 +27,7 @@ export function CheckboxGroup<T extends string>({
   onChange,
   error,
   className = 'form-group',
+  disabled = false,
 }: {
   legend: string;
   hint?: string;
@@ -37,6 +38,7 @@ export function CheckboxGroup<T extends string>({
   onChange: (selected: T[]) => void;
   error?: string;
   className?: string;
+  disabled?: boolean;
 }) {
   const describedBy = [hint ? hintId(path) : '', error ? errorId(path) : '']
     .filter(Boolean)
@@ -48,6 +50,7 @@ export function CheckboxGroup<T extends string>({
       id={fieldId(path)}
       tabIndex={-1}
       aria-describedby={describedBy || undefined}
+      disabled={disabled}
     >
       <legend>{legend}</legend>
       {hint && (

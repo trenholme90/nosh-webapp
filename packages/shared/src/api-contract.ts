@@ -1,5 +1,5 @@
-import type { RecipeFieldErrors } from './validate-recipe.ts';
-import { DIETARY_PREFERENCES, type Preferences, type Recipe } from './recipe.ts';
+import type { FieldErrors } from './validate-recipe.ts';
+import { isDietaryPreference, type Preferences, type Recipe } from './recipe.ts';
 
 /**
  * The HTTP contract between the client and the API: response shapes, plus runtime
@@ -15,7 +15,7 @@ export interface HealthResponse {
 /** Body of every non-2xx response. `fields` is present when a recipe failed validation. */
 export interface ErrorResponse {
   error: string;
-  fields?: RecipeFieldErrors;
+  fields?: FieldErrors;
 }
 
 export function isHealthResponse(value: unknown): value is HealthResponse {
@@ -50,10 +50,7 @@ export function isRecipeList(value: unknown): value is Recipe[] {
 export function isPreferences(value: unknown): value is Preferences {
   if (!isObject(value)) return false;
   const dietary = value['dietary'];
-  return (
-    Array.isArray(dietary) &&
-    dietary.every((entry) => (DIETARY_PREFERENCES as readonly unknown[]).includes(entry))
-  );
+  return Array.isArray(dietary) && dietary.every(isDietaryPreference);
 }
 
 export function isErrorResponse(value: unknown): value is ErrorResponse {

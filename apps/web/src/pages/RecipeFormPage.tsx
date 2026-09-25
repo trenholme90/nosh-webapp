@@ -5,7 +5,7 @@ import {
   type DietaryPreference,
   type MealType,
   type Recipe,
-  type RecipeFieldErrors,
+  type FieldErrors,
   type RecipeInput,
 } from '@nosh/shared';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
@@ -147,7 +147,7 @@ function describePath(path: string): string {
 function RecipeForm({ existing }: { existing?: Recipe }) {
   const navigate = useNavigate();
   const [values, setValues] = useState(() => toFormValues(existing));
-  const [errors, setErrors] = useState<RecipeFieldErrors>({});
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [saveFailed, setSaveFailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [failedSubmits, setFailedSubmits] = useState(0);

@@ -24,18 +24,18 @@ export const RECIPE_LIMITS = {
 } as const;
 
 /**
- * Error messages keyed by field path, e.g. `name`, `ingredients.2.item`, `method.0`.
+ * Validation error messages keyed by field path, e.g. `name`, `ingredients.2.item`, `method.0`.
  * Paths index into the submitted arrays, so the form can put each message beside
  * the row that caused it.
  */
-export type RecipeFieldErrors = Record<string, string>;
+export type FieldErrors = Record<string, string>;
 
 export type RecipeValidationResult =
-  { ok: true; value: RecipeInput } | { ok: false; errors: RecipeFieldErrors };
+  { ok: true; value: RecipeInput } | { ok: false; errors: FieldErrors };
 
 /** Check an untrusted value and return a trimmed, normalised `RecipeInput` if it is valid. */
 export function validateRecipeInput(value: unknown): RecipeValidationResult {
-  const errors: RecipeFieldErrors = {};
+  const errors: FieldErrors = {};
   const input = isRecord(value) ? value : {};
 
   const name = requiredText(
@@ -95,11 +95,11 @@ export function validateRecipeInput(value: unknown): RecipeValidationResult {
 }
 
 export type PreferencesValidationResult =
-  { ok: true; value: Preferences } | { ok: false; errors: RecipeFieldErrors };
+  { ok: true; value: Preferences } | { ok: false; errors: FieldErrors };
 
-/** Check an untrusted preferences body. Lives here to share the `choices` rules with recipes. */
+/** Check an untrusted preferences body. Lives beside recipes to share the `choices` rules. */
 export function validatePreferences(value: unknown): PreferencesValidationResult {
-  const errors: RecipeFieldErrors = {};
+  const errors: FieldErrors = {};
   const input = isRecord(value) ? value : {};
 
   if (!Array.isArray(input['dietary'])) {
@@ -110,7 +110,7 @@ export function validatePreferences(value: unknown): PreferencesValidationResult
   return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, value: { dietary } };
 }
 
-function validateIngredients(value: unknown, errors: RecipeFieldErrors): Ingredient[] {
+function validateIngredients(value: unknown, errors: FieldErrors): Ingredient[] {
   if (!Array.isArray(value) || value.length === 0) {
     errors['ingredients'] = 'Add at least one ingredient';
     return [];
@@ -148,7 +148,7 @@ function validateIngredients(value: unknown, errors: RecipeFieldErrors): Ingredi
   });
 }
 
-function validateMethod(value: unknown, errors: RecipeFieldErrors): string[] {
+function validateMethod(value: unknown, errors: FieldErrors): string[] {
   if (!Array.isArray(value) || value.length === 0) {
     errors['method'] = 'Add at least one step to the method';
     return [];
@@ -170,7 +170,7 @@ function requiredText(
   path: string,
   missingMessage: string,
   maxLength: number,
-  errors: RecipeFieldErrors,
+  errors: FieldErrors,
 ): string {
   const text = typeof value === 'string' ? value.trim() : '';
   if (text === '') errors[path] = missingMessage;
@@ -183,7 +183,7 @@ function optionalText(
   value: unknown,
   path: string,
   maxLength: number,
-  errors: RecipeFieldErrors,
+  errors: FieldErrors,
 ): string | null {
   if (value === undefined || value === null) return null;
   if (typeof value !== 'string') {
@@ -199,7 +199,7 @@ function choices<T extends string>(
   value: unknown,
   allowed: readonly T[],
   path: string,
-  errors: RecipeFieldErrors,
+  errors: FieldErrors,
 ): T[] {
   if (value === undefined) return [];
   if (!Array.isArray(value) || !value.every((entry) => allowed.includes(entry as T))) {

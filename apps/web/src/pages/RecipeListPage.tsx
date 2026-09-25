@@ -1,15 +1,16 @@
 import { DIETARY_PREFERENCES, type DietaryPreference, type Recipe } from '@nosh/shared';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { CheckboxGroup } from '../components/form-fields.tsx';
 import { LoadError } from '../components/LoadError.tsx';
 import { RecipeMeta } from '../components/RecipeMeta.tsx';
 import { suitsDiet } from '../lib/diet.ts';
 import { DIETARY_LABELS } from '../lib/format.ts';
-import { fetchPreferences, savePreferences } from '../lib/preferences-api.ts';
+import { fetchPreferences } from '../lib/preferences-api.ts';
 import { fetchRecipes } from '../lib/recipes-api.ts';
 import { useDocumentTitle } from '../lib/use-document-title.ts';
 import { useLoad } from '../lib/use-load.ts';
+import { useSavedDiet } from '../lib/use-saved-diet.ts';
 
 /** Navigation state a page can hand the list, e.g. after deleting a recipe. */
 export interface RecipeListState {
@@ -58,9 +59,8 @@ export function RecipeListPage() {
 }
 
 /**
- * The diet panel and the recipes it lets through. Holds the chosen diet itself,
- * seeded from what was saved, so ticking a box filters instantly while the save
- * happens in the background.
+ * The diet panel and the recipes it lets through. Ticking a box filters at once;
+ * `useSavedDiet` saves it in the background.
  */
 function RecipeBrowser({
   recipes,
@@ -71,31 +71,8 @@ function RecipeBrowser({
   savedDiet: DietaryPreference[];
   dietUnavailable: boolean;
 }) {
-  const [diet, setDiet] = useState(savedDiet);
+  const { diet, changeDiet, saveFailed } = useSavedDiet(savedDiet);
   const [showAll, setShowAll] = useState(false);
-  const [saveFailed, setSaveFailed] = useState(false);
-  // Cleared by a successful save: the diet on screen is then the saved one.
-  const [loadFailed, setLoadFailed] = useState(dietUnavailable);
-  // What the API last confirmed, to fall back to if a save fails.
-  const confirmedDiet = useRef(savedDiet);
-  // Only the newest save may report back: an older one finishing late is stale.
-  const latestSave = useRef(0);
-
-  async function changeDiet(next: DietaryPreference[]) {
-    setDiet(next);
-    setSaveFailed(false);
-    const save = ++latestSave.current;
-    try {
-      const saved = await savePreferences({ dietary: next });
-      if (save !== latestSave.current) return;
-      confirmedDiet.current = saved.dietary;
-      setLoadFailed(false);
-    } catch {
-      if (save !== latestSave.current) return;
-      setDiet(confirmedDiet.current);
-      setSaveFailed(true);
-    }
-  }
 
   const suitable = recipes.filter((recipe) => suitsDiet(recipe, diet));
   const hiddenCount = recipes.length - suitable.length;
@@ -111,11 +88,18 @@ function RecipeBrowser({
         options={DIETARY_PREFERENCES}
         labels={DIETARY_LABELS}
         selected={diet}
-        onChange={changeDiet}
+        onChange={(next) => {
+          // A new choice starts filtered again, so its effect is visible.
+          setShowAll(false);
+          changeDiet(next);
+        }}
+        // Saving over a diet we never loaded would wipe whatever was stored.
+        disabled={dietUnavailable}
       />
-      {loadFailed && !saveFailed && (
-        <p className="notice notice--warning">
-          We couldn’t load your saved diet, so every recipe is showing.
+      {dietUnavailable && (
+        <p className="notice notice--warning" role="status">
+          We couldn’t load your saved diet, so every recipe is showing. Reload the page to try
+          again.
         </p>
       )}
       {saveFailed && (
@@ -124,25 +108,29 @@ function RecipeBrowser({
         </p>
       )}
 
-      {hiddenCount > 0 && (
+      {diet.length > 0 && (
         <div className="filter-summary">
           <p role="status">
-            {showAll
-              ? `Showing all ${recipes.length} recipes, including ${hiddenCount} that don’t suit you.`
-              : `Showing ${suitable.length} of ${recipes.length} recipes that suit you.`}
+            {hiddenCount === 0
+              ? `All ${recipes.length} recipes suit you.`
+              : showAll
+                ? `Showing all ${recipes.length} recipes, including ${hiddenCount} that don’t suit you.`
+                : `Showing ${suitable.length} of ${recipes.length} recipes that suit you.`}
           </p>
-          <button
-            type="button"
-            className="button button--small"
-            onClick={() => setShowAll(!showAll)}
-          >
-            {showAll ? 'Only show recipes that suit me' : 'Show all'}
-          </button>
+          {hiddenCount > 0 && (
+            <button
+              type="button"
+              className="button button--small"
+              onClick={() => setShowAll(!showAll)}
+            >
+              {showAll ? 'Only show recipes that suit me' : 'Show all'}
+            </button>
+          )}
         </div>
       )}
 
-      {visible.length === 0 ? (
-        <p className="notice notice--success">
+      {visible.length === 0 && diet.length > 0 ? (
+        <p className="notice">
           None of our recipes suit all of those just yet. Try unticking one, or{' '}
           <Link to="/recipes/new">add a recipe of your own</Link>.
         </p>
