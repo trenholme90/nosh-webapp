@@ -1,3 +1,4 @@
+import type { PlannedMealInput } from './plan.ts';
 import {
   DIETARY_PREFERENCES,
   MEAL_TYPES,
@@ -53,16 +54,7 @@ export function validateRecipeInput(value: unknown): RecipeValidationResult {
     errors,
   );
 
-  const serves = input['serves'];
-  if (
-    typeof serves !== 'number' ||
-    !Number.isInteger(serves) ||
-    serves < RECIPE_LIMITS.minServes ||
-    serves > RECIPE_LIMITS.maxServes
-  ) {
-    errors['serves'] =
-      `Serves must be a whole number from ${RECIPE_LIMITS.minServes} to ${RECIPE_LIMITS.maxServes}`;
-  }
+  const serves = peopleCount(input['serves'], 'serves', 'Serves', errors);
 
   const mealType = choices(input['mealType'], MEAL_TYPES, 'mealType', errors);
   if (mealType.length === 0 && !errors['mealType']) {
@@ -87,7 +79,7 @@ export function validateRecipeInput(value: unknown): RecipeValidationResult {
       mealType,
       dietary,
       tags: isStringArray(tags) ? tags.map((tag) => tag.trim()).filter(Boolean) : [],
-      serves: serves as number,
+      serves,
       ingredients,
       method,
     },
@@ -108,6 +100,41 @@ export function validatePreferences(value: unknown): PreferencesValidationResult
   const dietary = choices(input['dietary'], DIETARY_PREFERENCES, 'dietary', errors);
 
   return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, value: { dietary } };
+}
+
+export type PlannedMealValidationResult =
+  { ok: true; value: PlannedMealInput } | { ok: false; errors: FieldErrors };
+
+/**
+ * Check an untrusted planned-meal body. Whether the recipe exists is the API's
+ * to check: this only knows the shape.
+ */
+export function validatePlannedMeal(value: unknown): PlannedMealValidationResult {
+  const errors: FieldErrors = {};
+  const input = isRecord(value) ? value : {};
+
+  const recipeId = typeof input['recipeId'] === 'string' ? input['recipeId'].trim() : '';
+  if (recipeId === '') errors['recipeId'] = 'Pick a recipe';
+  const servings = peopleCount(input['servings'], 'servings', 'Servings', errors);
+
+  return Object.keys(errors).length > 0
+    ? { ok: false, errors }
+    : { ok: true, value: { recipeId, servings } };
+}
+
+/** How many people a recipe or planned meal is for: the same range for both. */
+function peopleCount(value: unknown, path: string, label: string, errors: FieldErrors): number {
+  if (
+    typeof value !== 'number' ||
+    !Number.isInteger(value) ||
+    value < RECIPE_LIMITS.minServes ||
+    value > RECIPE_LIMITS.maxServes
+  ) {
+    errors[path] =
+      `${label} must be a whole number from ${RECIPE_LIMITS.minServes} to ${RECIPE_LIMITS.maxServes}`;
+    return 0;
+  }
+  return value;
 }
 
 function validateIngredients(value: unknown, errors: FieldErrors): Ingredient[] {

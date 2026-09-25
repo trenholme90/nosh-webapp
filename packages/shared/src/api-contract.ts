@@ -1,4 +1,5 @@
 import type { FieldErrors } from './validate-recipe.ts';
+import { isDay, isPlanSlot, type Plan, type PlannedMeal } from './plan.ts';
 import { isDietaryPreference, type Preferences, type Recipe } from './recipe.ts';
 
 /**
@@ -51,6 +52,20 @@ export function isPreferences(value: unknown): value is Preferences {
   if (!isObject(value)) return false;
   const dietary = value['dietary'];
   return Array.isArray(dietary) && dietary.every(isDietaryPreference);
+}
+
+export function isPlannedMeal(value: unknown): value is PlannedMeal {
+  if (!isObject(value)) return false;
+  return (
+    isDay(value['day']) &&
+    isPlanSlot(value['slot']) &&
+    typeof value['recipeId'] === 'string' &&
+    typeof value['servings'] === 'number'
+  );
+}
+
+export function isPlan(value: unknown): value is Plan {
+  return isObject(value) && Array.isArray(value['meals']) && value['meals'].every(isPlannedMeal);
 }
 
 export function isErrorResponse(value: unknown): value is ErrorResponse {
