@@ -45,6 +45,12 @@
   width: auto;
 }
 
+.app__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
 .app__nav-link {
   display: inline-block;
   padding: var(--space-2) var(--space-1);
@@ -458,4 +464,75 @@
 
 .error-summary a {
   font-weight: 700;
+}
+
+/* ---- Plan ---------------------------------------------------------------- */
+
+/* Days stack on a phone; from 40rem each day's three meals sit side by side. */
+.plan {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.plan:focus {
+  outline: none;
+}
+
+.plan__status:empty {
+  display: none;
+}
+
+.plan-day h2 {
+  font-size: 1.25rem;
+}
+
+.plan-day__slots {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.plan-slot {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+}
+
+.plan-slot h3 {
+  font-size: 1rem;
+}
+
+.plan-slot__recipe {
+  font-weight: 700;
+}
+
+.slot-editor {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.slot-editor select {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--colour-text);
+  border-radius: 0.5rem;
+  font: inherit;
+  color: inherit;
+  background-color: var(--colour-surface);
+}
+
+@media (min-width: 40rem) {
+  .plan-day__slots {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* A third of the width is too narrow to choose a recipe in comfortably. */
+  .plan-slot:has(.slot-editor) {
+    grid-column: 1 / -1;
+  }
 }

@@ -1,4 +1,4 @@
-import type { DietaryPreference, Ingredient, MealType } from '@nosh/shared';
+import type { Day, DietaryPreference, Ingredient, MealType } from '@nosh/shared';
 
 /** Display helpers: turn stored recipe values into the words people read. */
 
@@ -15,6 +15,21 @@ export const MEAL_TYPE_LABELS: Record<MealType, string> = {
   dinner: 'Dinner',
   dessert: 'Dessert',
 };
+
+export const DAY_LABELS: Record<Day, string> = {
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+  sunday: 'Sunday',
+};
+
+/** "For 1 person", "For 4 people". */
+export function formatServings(servings: number): string {
+  return `For ${servings} ${servings === 1 ? 'person' : 'people'}`;
+}
 
 export function capitalise(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
