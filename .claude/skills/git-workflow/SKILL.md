@@ -41,3 +41,4 @@ Short kebab-case names describing the work: `setup`, `weekly-planner`.
 
 The description is where the detail the commits leave out belongs: what changed,
 why, and how a reviewer verifies it.
+When mergeing, don't squash merge, we want to keep the commit history.
