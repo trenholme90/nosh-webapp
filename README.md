@@ -6,8 +6,9 @@ shopping list with everything added up.
 Built for the Enablis engineering challenge against the brief in
 [`docs/client-brief.pdf`](docs/client-brief.pdf).
 
-> **Status: recipes.** You can browse the starter recipes and add, edit and delete
-> your own. Dietary preferences, the weekly planner and the shopping list are next.
+> **Status: recipes and diets.** You can browse the starter recipes, add, edit and
+> delete your own, and set dietary preferences so only suitable recipes show. The
+> weekly planner and the shopping list are next.
 
 ## Requirements
 
@@ -105,13 +106,13 @@ apps/
       app.ts           app factory — mounts routes, no listen()
       index.ts         process entrypoint — port, listen, shutdown
       db/              schema.sql, paths, connection, seeding, recipe reads and writes
-      routes/          health, recipes
+      routes/          health, recipes, preferences
       __tests__/
   web/                 Vite + React + TypeScript client
     src/
       pages/           one component per route
       components/      pieces shared between pages
-      lib/             typed fetch wrapper, recipe endpoints, formatting, hooks
+      lib/             typed fetch wrapper, endpoints, diet filter, formatting, hooks
       styles/          brand tokens and global styles
 packages/
   shared/              domain types, recipe validation and the API contract (@nosh/shared)
@@ -186,6 +187,12 @@ screen-reader user would, rather than by CSS class. Accessibility checks sit ins
 the journey tests, not in a separate spec: when a test reaches a new page or state,
 it calls `expectNoA11yViolations(page)` there, so each feature's spec covers its own
 accessibility.
+
+Dietary preferences are one global setting, so a test that changes them would change
+what every other test sees. Those tests live in `preferences.spec.ts`, which runs in
+its own Playwright project after the rest of the suite, one test at a time, and
+resets the preferences around each test. Any future test that changes global state
+belongs in a project like that too.
 
 ## Data
 

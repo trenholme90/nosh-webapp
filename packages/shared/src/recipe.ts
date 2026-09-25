@@ -10,6 +10,10 @@
 export const DIETARY_PREFERENCES = ['vegetarian', 'vegan', 'dairy-free', 'gluten-free'] as const;
 export type DietaryPreference = (typeof DIETARY_PREFERENCES)[number];
 
+export function isDietaryPreference(value: unknown): value is DietaryPreference {
+  return (DIETARY_PREFERENCES as readonly unknown[]).includes(value);
+}
+
 /** Meal slots a recipe can fill. A recipe may suit more than one. */
 export const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert'] as const;
 export type MealType = (typeof MEAL_TYPES)[number];
@@ -45,6 +49,11 @@ export interface RecipeInput {
   ingredients: Ingredient[];
   /** Ordered method steps. */
   method: string[];
+}
+
+/** The single user's saved choices. Recipes on offer must carry every tag in `dietary`. */
+export interface Preferences {
+  dietary: DietaryPreference[];
 }
 
 export interface Recipe extends RecipeInput {

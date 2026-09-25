@@ -1,4 +1,4 @@
-import { isErrorResponse, type RecipeFieldErrors } from '@nosh/shared';
+import { isErrorResponse, type FieldErrors } from '@nosh/shared';
 
 /**
  * Thin typed wrapper around fetch.
@@ -14,7 +14,7 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
-    readonly fields: RecipeFieldErrors = {},
+    readonly fields: FieldErrors = {},
   ) {
     super(message);
     this.name = 'ApiError';

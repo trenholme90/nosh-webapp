@@ -1,6 +1,7 @@
 import express, { type ErrorRequestHandler, type Express } from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import { createHealthRouter } from './routes/health.ts';
+import { createPreferencesRouter } from './routes/preferences.ts';
 import { createRecipesRouter } from './routes/recipes.ts';
 
 /**
@@ -17,6 +18,7 @@ export function createApp(db: DatabaseSync): Express {
 
   app.use(createHealthRouter(db));
   app.use(createRecipesRouter(db));
+  app.use(createPreferencesRouter(db));
 
   app.use((_req, res) => {
     res.status(404).json({ error: 'Not found' });

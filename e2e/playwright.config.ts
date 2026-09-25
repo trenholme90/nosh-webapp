@@ -25,7 +25,22 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: /preferences\.spec\.ts/,
+    },
+    // Dietary preferences are one global setting on the shared API, and changing
+    // them changes what every other test sees on the recipe list. These tests
+    // therefore wait for the rest of the suite to finish, then run one at a time.
+    {
+      name: 'preferences',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /preferences\.spec\.ts/,
+      dependencies: ['chromium'],
+    },
+  ],
 
   webServer: [
     {

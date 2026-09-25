@@ -1,6 +1,6 @@
 import { Router, type Response } from 'express';
 import type { DatabaseSync } from 'node:sqlite';
-import { validateRecipeInput, type ErrorResponse } from '@nosh/shared';
+import { validateRecipeInput } from '@nosh/shared';
 import {
   createCustomRecipe,
   deleteCustomRecipe,
@@ -9,6 +9,7 @@ import {
   updateCustomRecipe,
   type WriteRefusal,
 } from '../db/recipes.ts';
+import { sendError } from './respond.ts';
 
 /**
  * Recipe catalogue: the starter set is read-only, the user's own recipes are
@@ -54,14 +55,4 @@ export function createRecipesRouter(db: DatabaseSync): Router {
 function sendRefusal(res: Response, refusal: WriteRefusal): void {
   if (refusal === 'not-found') sendError(res, 404, 'Recipe not found');
   else sendError(res, 403, 'Starter recipes cannot be changed');
-}
-
-function sendError(
-  res: Response,
-  status: number,
-  error: string,
-  fields?: ErrorResponse['fields'],
-): void {
-  const body: ErrorResponse = fields ? { error, fields } : { error };
-  res.status(status).json(body);
 }

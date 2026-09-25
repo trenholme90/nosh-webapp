@@ -1,8 +1,7 @@
 -- Nosh schema.
 --
--- Only the tables needed to hold the recipe catalogue exist at this stage.
--- `preferences` and `plan_entries` arrive with the planner feature - there is no
--- point creating tables nothing reads yet.
+-- Tables arrive with the features that read them: the recipe catalogue and the
+-- user's dietary preferences so far. `plan_entries` comes with the planner.
 --
 -- mealType/dietary/tags/method are stored as JSON text rather than join tables.
 -- For a catalogue this size that keeps the schema to two tables, and SQLite's
@@ -34,3 +33,12 @@ CREATE INDEX IF NOT EXISTS idx_ingredients_recipe ON ingredients (recipe_id);
 
 -- Shopping-list aggregation groups by item name, so it is worth an index.
 CREATE INDEX IF NOT EXISTS idx_ingredients_item ON ingredients (item);
+
+-- One row: the app has a single user, so there is nothing to key preferences by.
+-- The CHECK makes a second row impossible rather than merely unexpected.
+CREATE TABLE IF NOT EXISTS preferences (
+  id      INTEGER PRIMARY KEY CHECK (id = 1),
+  dietary TEXT    NOT NULL DEFAULT '[]' -- JSON array of DietaryPreference
+);
+
+INSERT OR IGNORE INTO preferences (id) VALUES (1);
