@@ -10,7 +10,8 @@ export default defineConfig({
     // is needed on the API at all.
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        // Overridable so the E2E suite can point at its own throwaway API.
+        target: process.env['NOSH_API_URL'] ?? 'http://localhost:4000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

@@ -1,40 +1,28 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { DatabaseSync } from 'node:sqlite';
-import { createDatabase } from '../db/client.ts';
-import { countIngredients, countRecipes } from '../db/queries.ts';
+import { describe, expect, it } from 'vitest';
+import { countIngredients, countRecipes } from '../db/recipes.ts';
 import { loadSampleRecipes, seedRecipes } from '../db/seed.ts';
+import { useMemoryDb } from './memory-db.ts';
 
 describe('seedRecipes', () => {
-  let db: DatabaseSync;
-
-  beforeEach(() => {
-    // createDatabase already seeds on open, which is the path production uses.
-    db = createDatabase(':memory:');
-  });
-
-  afterEach(() => {
-    db.close();
-  });
+  const db = useMemoryDb();
 
   it('loads every starter recipe and its ingredients', () => {
-    expect(countRecipes(db)).toBe(20);
-    expect(countIngredients(db)).toBe(132);
+    expect(countRecipes(db())).toBe(20);
+    expect(countIngredients(db())).toBe(132);
   });
 
   it('is a no-op when the database already holds recipes', () => {
-    const inserted = seedRecipes(db);
+    const inserted = seedRecipes(db());
 
     expect(inserted).toBe(0);
-    expect(countRecipes(db)).toBe(20);
-    expect(countIngredients(db)).toBe(132);
+    expect(countRecipes(db())).toBe(20);
+    expect(countIngredients(db())).toBe(132);
   });
 
   it('marks the starter recipes as built-in rather than user-added', () => {
-    const { count } = db
+    const { count } = db()
       .prepare('SELECT COUNT(*) AS count FROM recipes WHERE is_custom = 0')
-      .get() as {
-      count: number;
-    };
+      .get() as { count: number };
 
     expect(count).toBe(20);
   });
@@ -44,7 +32,7 @@ describe('seedRecipes', () => {
     const nullQuantities = ingredients.filter((i) => i.quantity === null).length;
     const nullUnits = ingredients.filter((i) => i.unit === null).length;
 
-    const stored = db
+    const stored = db()
       .prepare(
         'SELECT (SELECT COUNT(*) FROM ingredients WHERE quantity IS NULL) AS q, (SELECT COUNT(*) FROM ingredients WHERE unit IS NULL) AS u',
       )

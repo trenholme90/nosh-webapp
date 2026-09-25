@@ -8,7 +8,8 @@ if (!Number.isInteger(port) || port < 0 || port > 65535) {
   throw new Error(`PORT must be an integer from 0 to 65535, got "${process.env['PORT']}"`);
 }
 
-const db = createDatabase();
+// NOSH_DB_PATH lets the E2E suite run against a throwaway ':memory:' database.
+const db = createDatabase(process.env['NOSH_DB_PATH'] || undefined);
 const server = createApp(db).listen(port, () => {
   console.log(`[nosh-api] listening on http://localhost:${port}`);
 });

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { DatabaseSync } from 'node:sqlite';
 import type { HealthResponse } from '@nosh/shared';
-import { countRecipes } from '../db/queries.ts';
+import { countRecipes } from '../db/recipes.ts';
 
 /**
  * Health check.

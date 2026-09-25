@@ -4,6 +4,8 @@
   min-height: 100vh;
 }
 
+/* ---- Header -------------------------------------------------------------- */
+
 .app__header {
   /* The brief asks for clear space around the mark of at least the width of the
      "O", which is ~24.4px at this wordmark size. 32px clears it on every side: the
@@ -15,6 +17,11 @@
 .app__header-inner {
   width: var(--content-width);
   margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
 }
 
 .brand {
@@ -38,6 +45,22 @@
   width: auto;
 }
 
+.app__nav-link {
+  display: inline-block;
+  padding: var(--space-2) var(--space-1);
+  color: var(--colour-text-inverse);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+
+.app__nav-link:hover,
+.app__nav-link.active {
+  border-bottom-color: var(--colour-accent);
+}
+
+/* ---- Page layout --------------------------------------------------------- */
+
 .app__main {
   width: var(--content-width);
   margin-inline: auto;
@@ -49,29 +72,363 @@
   font-size: 1.125rem;
 }
 
-.scaffold-note {
-  margin-top: var(--space-6);
-  padding: var(--space-4);
-  border-left: 4px solid var(--colour-badge);
-  background-color: var(--colour-surface-badge-soft);
-  border-radius: var(--radius);
+.page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
 
-.status {
+.page-actions {
   margin-top: var(--space-6);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--colour-border);
+}
+
+.count {
+  font-weight: 400;
+}
+
+/* ---- Buttons ------------------------------------------------------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px is the minimum comfortable touch target on a small phone. */
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--colour-text);
   border-radius: var(--radius-pill);
-  display: inline-block;
+  background-color: var(--colour-surface);
+  color: var(--colour-text);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: var(--colour-surface-accent-soft);
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+/* Charcoal on green: green is a background colour, never a text colour. */
+.button--primary {
+  border-color: var(--colour-accent);
+  background-color: var(--colour-accent);
+  color: var(--colour-accent-text);
+}
+
+.button--primary:hover {
+  border-color: var(--colour-text);
+  background-color: var(--colour-accent);
+}
+
+/* Coral fails AA behind body text, so it marks the border only. */
+.button--danger {
+  border-color: var(--colour-warning);
+}
+
+.button--danger:hover {
+  background-color: var(--colour-surface-warning-soft);
+}
+
+.button--small {
+  padding-inline: var(--space-3);
   font-size: 0.9375rem;
 }
 
-.status--connected {
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* ---- Notices ------------------------------------------------------------- */
+
+.notice {
+  margin-top: var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid;
+  border-radius: var(--radius);
+}
+
+.notice--success {
   border-color: var(--colour-accent);
   background-color: var(--colour-surface-accent-soft);
 }
 
-.status--unavailable {
+.notice--warning {
   border-color: var(--colour-warning);
   background-color: var(--colour-surface-warning-soft);
+}
+
+/* ---- Recipe list --------------------------------------------------------- */
+
+.recipe-section {
+  margin-top: var(--space-8);
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recipe-card {
+  padding: var(--space-4);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+}
+
+.recipe-card:hover {
+  border-color: var(--colour-accent);
+}
+
+.recipe-card__title {
+  font-size: 1.125rem;
+}
+
+.recipe-meta {
+  margin-top: var(--space-2);
+  font-size: 0.9375rem;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  padding: 0 var(--space-2);
+  border: 1px solid var(--colour-accent);
+  border-radius: var(--radius-pill);
+  background-color: var(--colour-surface-accent-soft);
+  font-size: 0.875rem;
+}
+
+/* ---- Recipe detail ------------------------------------------------------- */
+
+.recipe h1 {
+  margin-top: var(--space-4);
+}
+
+.recipe__source {
+  margin-top: var(--space-4);
+  font-style: italic;
+}
+
+.recipe__body {
+  display: grid;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+
+@media (min-width: 48rem) {
+  .recipe__body {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+.recipe__body h2 {
+  font-size: 1.375rem;
+}
+
+.ingredient-list,
+.method-list {
+  margin: var(--space-3) 0 0;
+  padding-left: var(--space-6);
+}
+
+.ingredient-list li + li,
+.method-list li + li {
+  margin-top: var(--space-2);
+}
+
+.confirm {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 2px solid var(--colour-warning);
+  border-radius: var(--radius);
+  background-color: var(--colour-surface-warning-soft);
+}
+
+/* ---- Form ---------------------------------------------------------------- */
+
+.recipe-form {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.form-row > .field:first-child {
+  flex: 1 1 14rem;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+
+.field label,
+.form-group legend {
+  font-weight: 700;
+}
+
+.field--compact label {
+  font-size: 0.875rem;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--colour-text);
+  border-radius: 0.5rem;
+  font: inherit;
+  color: inherit;
+  background-color: var(--colour-surface);
+}
+
+.field [aria-invalid='true'] {
+  border-color: var(--colour-warning);
+  border-width: 3px;
+}
+
+.input--short {
+  max-width: 6rem;
+}
+
+.field-hint {
+  font-size: 0.9375rem;
+}
+
+/* Charcoal text, with the coral carried by the bar: coral text would fail AA. */
+.field-error {
+  padding-left: var(--space-2);
+  border-left: 4px solid var(--colour-warning);
+  font-weight: 700;
+}
+
+.form-group {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+}
+
+.form-group legend {
+  padding-inline: var(--space-1);
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+}
+
+.checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+
+.checkbox input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--colour-accent);
+}
+
+.row-list {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Amount and unit are short; ingredient and prep get the room. Two columns on a
+   phone, one line from tablet width up. */
+.ingredient-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-3);
+  align-items: end;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--colour-border);
+}
+
+/* On a phone, ingredient and prep take a full row each after amount and unit. */
+.ingredient-row > .field:nth-child(n + 3) {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 40rem) {
+  .ingredient-row {
+    grid-template-columns: 5rem 6rem 2fr 1.5fr auto;
+  }
+
+  .ingredient-row > .field:nth-child(n + 3) {
+    grid-column: auto;
+  }
+}
+
+.form-group > .button {
+  justify-self: start;
+}
+
+.step-row {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.step-row .field {
+  width: 100%;
+}
+
+.error-summary {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border: 3px solid var(--colour-warning);
+  border-radius: var(--radius);
+}
+
+.error-summary h2 {
+  font-size: 1.25rem;
+}
+
+.error-summary ul {
+  margin: var(--space-3) 0 0;
+  padding-left: var(--space-6);
+}
+
+.error-summary a {
+  font-weight: 700;
 }
