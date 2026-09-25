@@ -87,10 +87,11 @@ test.describe('Planning your week', () => {
   test('“Start a new week” asks first, then clears every meal', async ({
     page,
     request,
+    createRecipe,
     expectNoA11yViolations,
   }) => {
-    await planMeal(request, 'monday', 'breakfast', 'porridge-with-berries-and-honey');
-    await planMeal(request, 'sunday', 'breakfast', 'full-english-breakfast');
+    await planMeal(request, 'monday', 'breakfast', (await createRecipe()).id);
+    await planMeal(request, 'sunday', 'breakfast', (await createRecipe()).id);
 
     await page.goto('/plan');
     const planned = page.getByRole('region').getByRole('link');
@@ -120,6 +121,7 @@ test.describe('Planning your week', () => {
     page,
     request,
     createRecipe,
+    expectNoA11yViolations,
   }) => {
     const recipe = await createRecipe();
     await planMeal(request, 'wednesday', 'lunch', recipe.id);
@@ -132,6 +134,7 @@ test.describe('Planning your week', () => {
     await expect(confirm).toHaveAccessibleDescription(
       'It’s in your week, so it will come out of your plan too.',
     );
+    await expectNoA11yViolations(page);
     await confirm.getByRole('button', { name: 'Yes, delete it' }).click();
     await expect(page).toHaveURL('/recipes');
 

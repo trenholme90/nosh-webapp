@@ -475,10 +475,6 @@
   margin-top: var(--space-6);
 }
 
-.plan:focus {
-  outline: none;
-}
-
 .plan__status:empty {
   display: none;
 }

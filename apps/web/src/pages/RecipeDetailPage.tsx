@@ -78,8 +78,10 @@ function CustomRecipeActions({ recipe }: { recipe: Recipe }) {
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [failed, setFailed] = useState(false);
-  // Only used to warn on delete; if it fails to load, the warning is simply left out.
+  // Only used to warn on delete. Delete waits until it has loaded, so the warning can't
+  // be skipped by a quick tap; if it fails to load, the warning is simply left out.
   const plan = useLoad('plan', fetchPlan);
+  const checkingPlan = plan.status === 'loading';
   const planned =
     plan.status === 'ready' && plan.data.meals.some((meal) => meal.recipeId === recipe.id);
 
@@ -113,7 +115,7 @@ function CustomRecipeActions({ recipe }: { recipe: Recipe }) {
             type="button"
             className="button button--danger"
             onClick={handleDelete}
-            disabled={deleting}
+            disabled={deleting || checkingPlan}
           >
             {deleting ? 'Deleting…' : 'Yes, delete it'}
           </button>

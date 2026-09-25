@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import type { DatabaseSync } from 'node:sqlite';
-import { isDay, isPlanSlot, validatePlannedMeal, type Day, type PlanSlot } from '@nosh/shared';
+import { isDay, isPlanSlot, validatePlannedMeal, type PlanSlotRef } from '@nosh/shared';
 import { clearPlan, getPlan, removePlannedMeal, setPlannedMeal } from '../db/plan.ts';
 import { getRecipe } from '../db/recipes.ts';
 import { sendError } from './respond.ts';
@@ -19,8 +19,8 @@ export function createPlanRouter(db: DatabaseSync): Router {
   });
 
   router.put('/plan/:day/:slot', (req, res) => {
-    const slot = findSlot(req, res);
-    if (!slot) return;
+    const at = slotFromUrl(req, res);
+    if (!at) return;
 
     const result = validatePlannedMeal(req.body);
     if (!result.ok) return sendError(res, 400, 'Planned meal is not valid', result.errors);
@@ -31,14 +31,14 @@ export function createPlanRouter(db: DatabaseSync): Router {
       });
     }
 
-    res.json(setPlannedMeal(db, slot.day, slot.slot, result.value));
+    res.json(setPlannedMeal(db, at, result.value));
   });
 
   router.delete('/plan/:day/:slot', (req, res) => {
-    const slot = findSlot(req, res);
-    if (!slot) return;
+    const at = slotFromUrl(req, res);
+    if (!at) return;
 
-    removePlannedMeal(db, slot.day, slot.slot);
+    removePlannedMeal(db, at);
     res.status(204).end();
   });
 
@@ -46,7 +46,7 @@ export function createPlanRouter(db: DatabaseSync): Router {
 }
 
 /** Read the day and slot from the URL, answering 404 when either is not one we plan by. */
-function findSlot(req: Request, res: Response): { day: Day; slot: PlanSlot } | undefined {
+function slotFromUrl(req: Request, res: Response): PlanSlotRef | undefined {
   const { day, slot } = req.params;
   if (!isDay(day) || !isPlanSlot(slot)) {
     sendError(res, 404, 'Not a day and meal in the plan');

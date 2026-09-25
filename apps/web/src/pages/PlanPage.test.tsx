@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import type { Plan, Recipe } from '@nosh/shared';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -37,8 +37,8 @@ const echoSave = (body: unknown, url: string) => {
 };
 
 /**
- * Answer the page's three GETs with the given bodies, and hand each PUT to
- * `onSave` so a test can decide how a save ends.
+ * Answer the page's three GETs with the given bodies, hand each PUT to `onSave`
+ * so a test can decide how a save ends, and answer DELETEs with `deleteStatus`.
  */
 function mockApi({
   plan = { meals: [] } as unknown,
@@ -47,6 +47,7 @@ function mockApi({
   preferences = { dietary: [] } as unknown,
   preferencesStatus = 200,
   onSave = echoSave,
+  deleteStatus = 204,
 }: {
   plan?: unknown;
   planStatus?: number;
@@ -54,9 +55,11 @@ function mockApi({
   preferences?: unknown;
   preferencesStatus?: number;
   onSave?: (body: unknown, url: string) => Promise<unknown>;
+  deleteStatus?: number;
 } = {}) {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     if (init?.method === 'PUT') return onSave(JSON.parse(String(init.body)), url);
+    if (init?.method === 'DELETE') return json({ error: 'Nope' }, deleteStatus);
     if (url.endsWith('/recipes')) return json(recipes);
     if (url.endsWith('/preferences')) return json(preferences, preferencesStatus);
     return json(plan, planStatus);
@@ -223,5 +226,74 @@ describe('PlanPage', () => {
         name: 'Add lunch on Monday',
       }),
     ).toBeInTheDocument();
+  });
+
+  it('resets servings to the new recipe when you change a planned meal', async () => {
+    mockApi({
+      plan: { meals: [{ day: 'monday', slot: 'lunch', recipeId: 'soup', servings: 2 }] },
+      recipes: [recipe('Soup', ['lunch'], []), { ...recipe('Pie', ['lunch'], []), serves: 6 }],
+    });
+    renderPage();
+    const monday = await screen.findByRole('region', { name: 'Monday' });
+
+    fireEvent.click(within(monday).getByRole('button', { name: 'Change Monday lunch' }));
+    const servings = within(monday).getByLabelText('How many people?');
+    expect(servings).toHaveValue(2);
+
+    fireEvent.change(within(monday).getByLabelText('Recipe for Monday lunch'), {
+      target: { value: 'pie' },
+    });
+    expect(servings).toHaveValue(6);
+  });
+
+  it('locks the rest of the week while a save is on its way', async () => {
+    let finishSave = () => {};
+    mockApi({
+      plan: { meals: [{ day: 'tuesday', slot: 'dinner', recipeId: 'dahl', servings: 2 }] },
+      onSave: (body, url) =>
+        new Promise((resolve) => {
+          finishSave = () => resolve(echoSave(body, url));
+        }),
+    });
+    renderPage();
+    await chooseForMondayLunch('soup');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    const tuesday = screen.getByRole('region', { name: 'Tuesday' });
+    expect(within(tuesday).getByRole('button', { name: 'Remove Tuesday dinner' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Start a new week' })).toBeDisabled();
+
+    await act(async () => finishSave());
+    expect(within(tuesday).getByRole('button', { name: 'Remove Tuesday dinner' })).toBeEnabled();
+  });
+
+  it('keeps a meal and says so when taking it off fails', async () => {
+    mockApi({
+      plan: { meals: [{ day: 'monday', slot: 'lunch', recipeId: 'soup', servings: 2 }] },
+      deleteStatus: 500,
+    });
+    renderPage();
+    const monday = await screen.findByRole('region', { name: 'Monday' });
+
+    fireEvent.click(within(monday).getByRole('button', { name: 'Remove Monday lunch' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/couldn’t change your week/i);
+    expect(within(monday).getByRole('link', { name: 'Soup' })).toBeInTheDocument();
+  });
+
+  it('keeps the week and says so when clearing it fails', async () => {
+    mockApi({
+      plan: { meals: [{ day: 'monday', slot: 'lunch', recipeId: 'soup', servings: 2 }] },
+      deleteStatus: 500,
+    });
+    renderPage();
+    const monday = await screen.findByRole('region', { name: 'Monday' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start a new week' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, clear it' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/couldn’t change your week/i);
+    expect(within(monday).getByRole('link', { name: 'Soup' })).toBeInTheDocument();
   });
 });

@@ -1,11 +1,10 @@
 import {
   isPlan,
   isPlannedMeal,
-  type Day,
   type Plan,
   type PlannedMeal,
   type PlannedMealInput,
-  type PlanSlot,
+  type PlanSlotRef,
 } from '@nosh/shared';
 import { apiDelete, apiGet, apiPut } from './api.ts';
 
@@ -16,14 +15,13 @@ export function fetchPlan(): Promise<Plan> {
 }
 
 export function savePlannedMeal(
-  day: Day,
-  slot: PlanSlot,
+  { day, slot }: PlanSlotRef,
   input: PlannedMealInput,
 ): Promise<PlannedMeal> {
   return apiPut(`/plan/${day}/${slot}`, input, isPlannedMeal);
 }
 
-export function removePlannedMeal(day: Day, slot: PlanSlot): Promise<void> {
+export function removePlannedMeal({ day, slot }: PlanSlotRef): Promise<void> {
   return apiDelete(`/plan/${day}/${slot}`);
 }
 

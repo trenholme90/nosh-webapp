@@ -2,12 +2,11 @@ import {
   DAYS,
   PLAN_SLOTS,
   validatePlannedMeal,
-  type Day,
   type DietaryPreference,
   type FieldErrors,
   type PlannedMeal,
   type PlannedMealInput,
-  type PlanSlot,
+  type PlanSlotRef,
   type Recipe,
 } from '@nosh/shared';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -57,10 +56,11 @@ export function PlanPage() {
   );
 }
 
-const slotKey = (day: Day, slot: PlanSlot) => `${day}-${slot}`;
-const slotHeadingId = (day: Day, slot: PlanSlot) => `slot-${slotKey(day, slot)}`;
-const slotName = (day: Day, slot: PlanSlot) =>
+const slotKey = ({ day, slot }: PlanSlotRef) => `${day}-${slot}`;
+const slotHeadingId = (at: PlanSlotRef) => `slot-${slotKey(at)}`;
+const slotName = ({ day, slot }: PlanSlotRef) =>
   `${DAY_LABELS[day]} ${MEAL_TYPE_LABELS[slot].toLowerCase()}`;
+const isIn = (meal: PlannedMeal, at: PlanSlotRef) => meal.day === at.day && meal.slot === at.slot;
 
 /**
  * The seven days and their slots. Each change is sent and confirmed before the
@@ -93,32 +93,34 @@ function WeekPlanner({
   });
 
   const recipesById = new Map(recipes.map((recipe) => [recipe.id, recipe]));
-  const mealIn = (day: Day, slot: PlanSlot) =>
-    meals.find((meal) => meal.day === day && meal.slot === slot);
-
-  function finish(message: string, focusId: string) {
+  /** Say what changed, and put focus where the change happened. */
+  function announceChange(message: string, focusId: string) {
     setAnnouncement(message);
     setChangeFailed(false);
     focusAfterRender.current = focusId;
   }
 
-  async function save(day: Day, slot: PlanSlot, input: PlannedMealInput) {
-    const saved = await savePlannedMeal(day, slot, input);
-    setMeals((current) => [
-      ...current.filter((meal) => meal.day !== day || meal.slot !== slot),
-      saved,
-    ]);
-    setEditing(undefined);
-    const name = recipesById.get(saved.recipeId)?.name ?? 'That recipe';
-    finish(`${name} is planned for ${slotName(day, slot)}.`, slotHeadingId(day, slot));
-  }
-
-  async function remove(day: Day, slot: PlanSlot) {
+  // The whole week is locked while a save is out, so nothing can change under it.
+  // A failure is rethrown for the editor to explain beside its fields.
+  async function save(at: PlanSlotRef, input: PlannedMealInput) {
     setBusy(true);
     try {
-      await removePlannedMeal(day, slot);
-      setMeals((current) => current.filter((meal) => meal.day !== day || meal.slot !== slot));
-      finish(`${slotName(day, slot)} is empty again.`, slotHeadingId(day, slot));
+      const saved = await savePlannedMeal(at, input);
+      setMeals((current) => [...current.filter((meal) => !isIn(meal, at)), saved]);
+      setEditing(undefined);
+      const name = recipesById.get(saved.recipeId)?.name ?? 'That recipe';
+      announceChange(`${name} is planned for ${slotName(at)}.`, slotHeadingId(at));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove(at: PlanSlotRef) {
+    setBusy(true);
+    try {
+      await removePlannedMeal(at);
+      setMeals((current) => current.filter((meal) => !isIn(meal, at)));
+      announceChange(`${slotName(at)} is empty again.`, slotHeadingId(at));
     } catch {
       setChangeFailed(true);
     } finally {
@@ -133,7 +135,7 @@ function WeekPlanner({
       setMeals([]);
       setConfirmingClear(false);
       setEditing(undefined);
-      finish('Your week is clear. Time to plan a new one.', 'plan-days');
+      announceChange('Your week is clear. Time to plan a new one.', 'plan-days');
     } catch {
       setChangeFailed(true);
     } finally {
@@ -185,7 +187,12 @@ function WeekPlanner({
           </div>
         ) : (
           <div className="page-actions">
-            <button type="button" className="button" onClick={() => setConfirmingClear(true)}>
+            <button
+              type="button"
+              className="button"
+              onClick={() => setConfirmingClear(true)}
+              disabled={busy}
+            >
               Start a new week
             </button>
           </div>
@@ -197,26 +204,26 @@ function WeekPlanner({
             <h2 id={`day-${day}`}>{DAY_LABELS[day]}</h2>
             <div className="plan-day__slots">
               {PLAN_SLOTS.map((slot) => {
-                const meal = mealIn(day, slot);
+                const at = { day, slot };
+                const meal = meals.find((candidate) => isIn(candidate, at));
                 const recipe = meal && recipesById.get(meal.recipeId);
-                const key = slotKey(day, slot);
+                const key = slotKey(at);
 
                 return (
                   <div key={slot} className="plan-slot">
-                    <h3 id={slotHeadingId(day, slot)} tabIndex={-1}>
+                    <h3 id={slotHeadingId(at)} tabIndex={-1}>
                       {MEAL_TYPE_LABELS[slot]}
                     </h3>
                     {editing === key ? (
                       <SlotEditor
-                        day={day}
-                        slot={slot}
+                        at={at}
                         current={recipe && meal}
                         recipes={recipes}
                         diet={diet}
-                        onSave={(input) => save(day, slot, input)}
+                        onSave={(input) => save(at, input)}
                         onCancel={() => {
                           setEditing(undefined);
-                          focusAfterRender.current = slotHeadingId(day, slot);
+                          focusAfterRender.current = slotHeadingId(at);
                         }}
                       />
                     ) : recipe && meal ? (
@@ -232,15 +239,15 @@ function WeekPlanner({
                             onClick={() => setEditing(key)}
                             disabled={busy}
                           >
-                            Change <span className="visually-hidden">{slotName(day, slot)}</span>
+                            Change <span className="visually-hidden">{slotName(at)}</span>
                           </button>
                           <button
                             type="button"
                             className="button button--small"
-                            onClick={() => remove(day, slot)}
+                            onClick={() => remove(at)}
                             disabled={busy}
                           >
-                            Remove <span className="visually-hidden">{slotName(day, slot)}</span>
+                            Remove <span className="visually-hidden">{slotName(at)}</span>
                           </button>
                         </div>
                       </>
@@ -271,16 +278,14 @@ function WeekPlanner({
  * offered, those made for this meal first; servings follow the recipe until edited.
  */
 function SlotEditor({
-  day,
-  slot,
+  at,
   current,
   recipes,
   diet,
   onSave,
   onCancel,
 }: {
-  day: Day;
-  slot: PlanSlot;
+  at: PlanSlotRef;
   current: PlannedMeal | undefined;
   recipes: Recipe[];
   diet: DietaryPreference[];
@@ -289,7 +294,9 @@ function SlotEditor({
 }) {
   const [recipeId, setRecipeId] = useState(current?.recipeId ?? '');
   const [servings, setServings] = useState(current ? String(current.servings) : '');
-  const [servingsEdited, setServingsEdited] = useState(current !== undefined);
+  // Picking a different recipe resets servings to what it serves, until the person
+  // types their own number in this editor - even when changing a planned meal.
+  const [servingsEdited, setServingsEdited] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saving, setSaving] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
@@ -303,8 +310,8 @@ function SlotEditor({
   const offered = recipes.filter(
     (recipe) => suitsDiet(recipe, diet) || recipe.id === current?.recipeId,
   );
-  const madeForSlot = offered.filter((recipe) => recipe.mealType.includes(slot));
-  const others = offered.filter((recipe) => !recipe.mealType.includes(slot));
+  const madeForSlot = offered.filter((recipe) => recipe.mealType.includes(at.slot));
+  const others = offered.filter((recipe) => !recipe.mealType.includes(at.slot));
 
   function chooseRecipe(id: string) {
     setRecipeId(id);
@@ -338,7 +345,7 @@ function SlotEditor({
     }
   }
 
-  const invalid = (path: string) => ({
+  const fieldAttributes = (path: string) => ({
     id: fieldId(path),
     'aria-invalid': errors[path] ? true : undefined,
     'aria-describedby': errors[path] ? errorId(path) : undefined,
@@ -348,18 +355,18 @@ function SlotEditor({
     <form className="slot-editor" onSubmit={handleSubmit} noValidate>
       <div className="field">
         <label htmlFor={fieldId('recipeId')}>
-          Recipe <span className="visually-hidden">for {slotName(day, slot)}</span>
+          Recipe <span className="visually-hidden">for {slotName(at)}</span>
         </label>
         <FieldError path="recipeId" error={errors['recipeId']} />
         <select
           ref={select}
-          {...invalid('recipeId')}
+          {...fieldAttributes('recipeId')}
           value={recipeId}
           onChange={(event) => chooseRecipe(event.target.value)}
         >
           <option value="">Choose a recipe</option>
           {madeForSlot.length > 0 && (
-            <optgroup label={`Good for ${MEAL_TYPE_LABELS[slot].toLowerCase()}`}>
+            <optgroup label={`Good for ${MEAL_TYPE_LABELS[at.slot].toLowerCase()}`}>
               {madeForSlot.map((recipe) => (
                 <option key={recipe.id} value={recipe.id}>
                   {recipe.name}
@@ -383,7 +390,7 @@ function SlotEditor({
         <label htmlFor={fieldId('servings')}>How many people?</label>
         <FieldError path="servings" error={errors['servings']} />
         <input
-          {...invalid('servings')}
+          {...fieldAttributes('servings')}
           className="input--short"
           type="number"
           inputMode="numeric"

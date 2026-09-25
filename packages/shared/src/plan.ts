@@ -28,6 +28,12 @@ export function isPlanSlot(value: unknown): value is PlanSlot {
   return (PLAN_SLOTS as readonly unknown[]).includes(value);
 }
 
+/** One slot in the week, e.g. Monday dinner. */
+export interface PlanSlotRef {
+  day: Day;
+  slot: PlanSlot;
+}
+
 /** What a person chooses for a slot. */
 export interface PlannedMealInput {
   recipeId: string;
@@ -35,10 +41,7 @@ export interface PlannedMealInput {
   servings: number;
 }
 
-export interface PlannedMeal extends PlannedMealInput {
-  day: Day;
-  slot: PlanSlot;
-}
+export interface PlannedMeal extends PlanSlotRef, PlannedMealInput {}
 
 /** Filled slots only, in day then slot order. An empty slot is simply absent. */
 export interface Plan {

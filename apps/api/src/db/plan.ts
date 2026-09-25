@@ -7,6 +7,7 @@ import {
   type PlannedMeal,
   type PlannedMealInput,
   type PlanSlot,
+  type PlanSlotRef,
 } from '@nosh/shared';
 
 /** Reads and writes for the weekly plan. One row per filled slot. */
@@ -36,8 +37,7 @@ export function getPlan(db: DatabaseSync): Plan {
 /** Fill a slot, replacing whatever was there. The caller checks the recipe exists. */
 export function setPlannedMeal(
   db: DatabaseSync,
-  day: Day,
-  slot: PlanSlot,
+  { day, slot }: PlanSlotRef,
   input: PlannedMealInput,
 ): PlannedMeal {
   db.prepare(
@@ -47,7 +47,7 @@ export function setPlannedMeal(
   return { day, slot, ...input };
 }
 
-export function removePlannedMeal(db: DatabaseSync, day: Day, slot: PlanSlot): void {
+export function removePlannedMeal(db: DatabaseSync, { day, slot }: PlanSlotRef): void {
   db.prepare('DELETE FROM plan_entries WHERE day = ? AND slot = ?').run(day, slot);
 }
 
