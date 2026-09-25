@@ -47,6 +47,11 @@ export interface RecipeInput {
   method: string[];
 }
 
+/** The single user's saved choices. Recipes on offer must carry every tag in `dietary`. */
+export interface Preferences {
+  dietary: DietaryPreference[];
+}
+
 export interface Recipe extends RecipeInput {
   /** Stable slug, e.g. "porridge-with-berries-and-honey". */
   id: string;

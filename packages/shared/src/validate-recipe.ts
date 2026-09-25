@@ -1,4 +1,10 @@
-import { DIETARY_PREFERENCES, MEAL_TYPES, type Ingredient, type RecipeInput } from './recipe.ts';
+import {
+  DIETARY_PREFERENCES,
+  MEAL_TYPES,
+  type Ingredient,
+  type Preferences,
+  type RecipeInput,
+} from './recipe.ts';
 
 /**
  * Validation for recipes a person adds or edits.
@@ -86,6 +92,22 @@ export function validateRecipeInput(value: unknown): RecipeValidationResult {
       method,
     },
   };
+}
+
+export type PreferencesValidationResult =
+  { ok: true; value: Preferences } | { ok: false; errors: RecipeFieldErrors };
+
+/** Check an untrusted preferences body. Lives here to share the `choices` rules with recipes. */
+export function validatePreferences(value: unknown): PreferencesValidationResult {
+  const errors: RecipeFieldErrors = {};
+  const input = isRecord(value) ? value : {};
+
+  if (!Array.isArray(input['dietary'])) {
+    return { ok: false, errors: { dietary: 'Dietary preferences must be a list' } };
+  }
+  const dietary = choices(input['dietary'], DIETARY_PREFERENCES, 'dietary', errors);
+
+  return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, value: { dietary } };
 }
 
 function validateIngredients(value: unknown, errors: RecipeFieldErrors): Ingredient[] {

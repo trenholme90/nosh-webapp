@@ -10,6 +10,7 @@ import {
 } from '@nosh/shared';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import { CheckboxGroup, errorId, FieldError, fieldId } from '../components/form-fields.tsx';
 import { LoadError } from '../components/LoadError.tsx';
 import { ApiError } from '../lib/api.ts';
 import { DIETARY_LABELS, MEAL_TYPE_LABELS, parseQuantity } from '../lib/format.ts';
@@ -133,10 +134,6 @@ function toRecipeInput(values: FormValues, tags: string[]): RecipeInput {
 }
 
 // ---------------------------------------------------------------------------
-
-/** DOM id for the input an error path points at: `ingredients.2.item` -> `field-ingredients-2-item`. */
-const fieldId = (path: string) => `field-${path.replace(/\./g, '-')}`;
-const errorId = (path: string) => `${fieldId(path)}-error`;
 
 /** Context for the error summary, where a message is read away from its row. */
 function describePath(path: string): string {
@@ -527,66 +524,5 @@ function Field({
       <FieldError path={path} error={error} />
       {children}
     </div>
-  );
-}
-
-function FieldError({ path, error }: { path: string; error: string | undefined }) {
-  if (!error) return null;
-  return (
-    <p className="field-error" id={errorId(path)}>
-      {error}
-    </p>
-  );
-}
-
-function CheckboxGroup<T extends string>({
-  legend,
-  hint,
-  path,
-  options,
-  labels,
-  selected,
-  onChange,
-  error,
-}: {
-  legend: string;
-  hint?: string;
-  path: string;
-  options: readonly T[];
-  labels: Record<T, string>;
-  selected: T[];
-  onChange: (selected: T[]) => void;
-  error: string | undefined;
-}) {
-  return (
-    <fieldset
-      className="form-group"
-      id={fieldId(path)}
-      tabIndex={-1}
-      aria-describedby={error ? errorId(path) : undefined}
-    >
-      <legend>{legend}</legend>
-      {hint && <p className="field-hint">{hint}</p>}
-      <FieldError path={path} error={error} />
-      <div className="checkboxes">
-        {options.map((option) => (
-          <label key={option} className="checkbox">
-            <input
-              type="checkbox"
-              checked={selected.includes(option)}
-              onChange={(event) =>
-                // Keep the canonical order whatever order boxes are ticked in.
-                onChange(
-                  options.filter((o) =>
-                    o === option ? event.target.checked : selected.includes(o),
-                  ),
-                )
-              }
-            />
-            {labels[option]}
-          </label>
-        ))}
-      </div>
-    </fieldset>
   );
 }

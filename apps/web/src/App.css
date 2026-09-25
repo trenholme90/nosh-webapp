@@ -171,6 +171,33 @@
 
 /* ---- Recipe list --------------------------------------------------------- */
 
+/* The panel shares the form's checkbox styles; it sits on a soft green wash so it
+   reads as a setting for the list rather than part of the content. */
+.diet-panel {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4);
+  border: 1px solid var(--colour-accent);
+  border-radius: var(--radius);
+  background-color: var(--colour-surface-accent-soft);
+}
+
+.diet-panel legend {
+  padding-inline: var(--space-1);
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-4);
+}
+
 .recipe-section {
   margin-top: var(--space-8);
 }

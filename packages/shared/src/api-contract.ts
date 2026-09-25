@@ -1,5 +1,5 @@
 import type { RecipeFieldErrors } from './validate-recipe.ts';
-import type { Recipe } from './recipe.ts';
+import { DIETARY_PREFERENCES, type Preferences, type Recipe } from './recipe.ts';
 
 /**
  * The HTTP contract between the client and the API: response shapes, plus runtime
@@ -45,6 +45,15 @@ export function isRecipe(value: unknown): value is Recipe {
 
 export function isRecipeList(value: unknown): value is Recipe[] {
   return Array.isArray(value) && value.every(isRecipe);
+}
+
+export function isPreferences(value: unknown): value is Preferences {
+  if (!isObject(value)) return false;
+  const dietary = value['dietary'];
+  return (
+    Array.isArray(dietary) &&
+    dietary.every((entry) => (DIETARY_PREFERENCES as readonly unknown[]).includes(entry))
+  );
 }
 
 export function isErrorResponse(value: unknown): value is ErrorResponse {
