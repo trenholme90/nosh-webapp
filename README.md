@@ -6,9 +6,9 @@ shopping list with everything added up.
 Built for the Enablis engineering challenge against the brief in
 [`docs/client-brief.pdf`](docs/client-brief.pdf).
 
-> **Status: recipes and diets.** You can browse the starter recipes, add, edit and
-> delete your own, and set dietary preferences so only suitable recipes show. The
-> weekly planner and the shopping list are next.
+> **Status: recipes, diets and the weekly plan.** You can browse the starter recipes,
+> add, edit and delete your own, set dietary preferences so only suitable recipes
+> show, and plan breakfast, lunch and dinner across the week. The shopping list is next.
 
 ## Requirements
 
@@ -105,8 +105,8 @@ apps/
     src/
       app.ts           app factory — mounts routes, no listen()
       index.ts         process entrypoint — port, listen, shutdown
-      db/              schema.sql, paths, connection, seeding, recipe reads and writes
-      routes/          health, recipes, preferences
+      db/              schema.sql, paths, connection, seeding, recipe and plan reads and writes
+      routes/          health, recipes, preferences, plan
       __tests__/
   web/                 Vite + React + TypeScript client
     src/
@@ -191,8 +191,10 @@ accessibility.
 Dietary preferences are one global setting, so a test that changes them would change
 what every other test sees. Those tests live in `preferences.spec.ts`, which runs in
 its own Playwright project after the rest of the suite, one test at a time, and
-resets the preferences around each test. Any future test that changes global state
-belongs in a project like that too.
+resets the preferences around each test. The weekly plan is global in the same way,
+so `plan.spec.ts` gets a project of its own that runs after that one and clears the
+week around each test. Any future test that changes global state belongs in a project
+like that too.
 
 ## Data
 

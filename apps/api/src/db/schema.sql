@@ -1,7 +1,7 @@
 -- Nosh schema.
 --
--- Tables arrive with the features that read them: the recipe catalogue and the
--- user's dietary preferences so far. `plan_entries` comes with the planner.
+-- Tables arrive with the features that read them: the recipe catalogue, the
+-- user's dietary preferences and the weekly plan.
 --
 -- mealType/dietary/tags/method are stored as JSON text rather than join tables.
 -- For a catalogue this size that keeps the schema to two tables, and SQLite's
@@ -42,3 +42,14 @@ CREATE TABLE IF NOT EXISTS preferences (
 );
 
 INSERT OR IGNORE INTO preferences (id) VALUES (1);
+
+-- The weekly plan: one rolling week, so a slot is just a day and a meal, with no date.
+-- The primary key allows one recipe per slot. Deleting a recipe takes it off the
+-- plan too, which is the rule the user sees on the delete confirmation.
+CREATE TABLE IF NOT EXISTS plan_entries (
+  day       TEXT    NOT NULL CHECK (day IN ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')),
+  slot      TEXT    NOT NULL CHECK (slot IN ('breakfast', 'lunch', 'dinner')),
+  recipe_id TEXT    NOT NULL REFERENCES recipes (id) ON DELETE CASCADE,
+  servings  INTEGER NOT NULL CHECK (servings BETWEEN 1 AND 20),
+  PRIMARY KEY (day, slot)
+);

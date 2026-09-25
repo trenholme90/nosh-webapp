@@ -29,7 +29,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: /preferences\.spec\.ts/,
+      testIgnore: /(preferences|plan)\.spec\.ts/,
     },
     // Dietary preferences are one global setting on the shared API, and changing
     // them changes what every other test sees on the recipe list. These tests
@@ -39,6 +39,14 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: /preferences\.spec\.ts/,
       dependencies: ['chromium'],
+    },
+    // The plan is one global week in the same way. It runs last so no other test
+    // changes the diet (which narrows the recipe picker) while it runs.
+    {
+      name: 'plan',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /plan\.spec\.ts/,
+      dependencies: ['preferences'],
     },
   ],
 
