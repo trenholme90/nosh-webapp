@@ -79,6 +79,10 @@ Present the two reports under `## Standards` and `## Spec` headings, verbatim or
 
 End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes: that's the reranking the separation exists to prevent.
 
+### 6. Verification gate
+
+Output to the console any changes/decisions you had to make as part of the review. There needs to be human varification before merge
+
 ## Why two axes
 
 A change can pass one axis and fail the other:
