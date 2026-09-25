@@ -6,7 +6,13 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**'],
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/coverage/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+    ],
   },
 
   js.configs.recommended,
@@ -33,6 +39,18 @@ export default tseslint.config(
     files: ['apps/api/**/*.ts'],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+
+  // E2E: Playwright runs in Node. Its fixtures must destructure their dependencies,
+  // so a fixture with none is written `async ({}, use)` - an empty pattern by design.
+  {
+    files: ['e2e/**/*.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+    rules: {
+      'no-empty-pattern': 'off',
     },
   },
 

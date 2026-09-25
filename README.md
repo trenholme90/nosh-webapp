@@ -6,9 +6,8 @@ shopping list with everything added up.
 Built for the Enablis engineering challenge against the brief in
 [`docs/client-brief.pdf`](docs/client-brief.pdf).
 
-> **Status: scaffolding.** The workspace, API, client, database and tooling are in
-> place and wired together end to end. The product features — recipe browsing,
-> dietary preferences, the weekly planner and the shopping list — are not built yet.
+> **Status: recipes.** You can browse the starter recipes and add, edit and delete
+> your own. Dietary preferences, the weekly planner and the shopping list are next.
 
 ## Requirements
 
@@ -43,6 +42,7 @@ Run these from the repo root.
 | `npm run dev:api`      | API only, on <http://localhost:4000>            |
 | `npm run dev:web`      | Web client only, on <http://localhost:5173>     |
 | `npm test`             | Runs the Vitest suites in both apps and exits   |
+| `npm run test:e2e`     | Runs the Playwright end-to-end suite            |
 | `npm run typecheck`    | Type-checks every workspace                     |
 | `npm run lint`         | ESLint across the repo                          |
 | `npm run build`        | Production build of the web client              |
@@ -52,12 +52,14 @@ Run these from the repo root.
 ## Configuration
 
 Nothing needs configuring to run locally — the defaults _are_ the development
-setup. Two environment variables are read if you set them:
+setup. These environment variables are read if you set them:
 
-| Variable            | Read by    | Default | What it does                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------- | ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`              | `apps/api` | `4000`  | Port the API listens on. Read straight from the process environment; there is no dotenv loader, so export it or prefix the command: `PORT=4100 npm run dev:api`.                                                                                                                                                                                                                               |
-| `VITE_API_BASE_URL` | `apps/web` | `/api`  | Base URL the client prefixes onto API requests. Leave it unset in development — the client calls same-origin `/api/*` and Vite proxies them. Set it only when the API is served from another origin, and note the API has no CORS configuration yet, so that setup needs CORS added first. Vite reads it from `apps/web/.env`; copy [`apps/web/.env.example`](apps/web/.env.example) to start. |
+| Variable            | Read by    | Default                 | What it does                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------- | ---------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`              | `apps/api` | `4000`                  | Port the API listens on. Read straight from the process environment; there is no dotenv loader, so export it or prefix the command: `PORT=4100 npm run dev:api`.                                                                                                                                                                                                                               |
+| `VITE_API_BASE_URL` | `apps/web` | `/api`                  | Base URL the client prefixes onto API requests. Leave it unset in development — the client calls same-origin `/api/*` and Vite proxies them. Set it only when the API is served from another origin, and note the API has no CORS configuration yet, so that setup needs CORS added first. Vite reads it from `apps/web/.env`; copy [`apps/web/.env.example`](apps/web/.env.example) to start. |
+| `NOSH_DB_PATH`      | `apps/api` | `apps/api/data/nosh.db` | SQLite file the API opens. The E2E suite sets it to `:memory:` so every run starts from the starter recipes.                                                                                                                                                                                                                                                                                   |
+| `NOSH_API_URL`      | `apps/web` | `http://localhost:4000` | Where the Vite dev server proxies `/api/*`. The E2E suite points it at its own API.                                                                                                                                                                                                                                                                                                            |
 
 ## How it is put together
 
@@ -102,15 +104,18 @@ apps/
     src/
       app.ts           app factory — mounts routes, no listen()
       index.ts         process entrypoint — port, listen, shutdown
-      db/              schema.sql, paths, connection, seeding, read queries
-      routes/
+      db/              schema.sql, paths, connection, seeding, recipe reads and writes
+      routes/          health, recipes
       __tests__/
   web/                 Vite + React + TypeScript client
     src/
-      lib/api.ts       typed fetch wrapper
+      pages/           one component per route
+      components/      pieces shared between pages
+      lib/             typed fetch wrapper, recipe endpoints, formatting, hooks
       styles/          brand tokens and global styles
 packages/
-  shared/              domain types used by both apps (@nosh/shared)
+  shared/              domain types, recipe validation and the API contract (@nosh/shared)
+e2e/                   Playwright end-to-end suite, with axe accessibility checks
 ```
 
 ## Accessibility
@@ -159,12 +164,25 @@ side: block padding on the bar, and the inline gutter in `--content-width`.
 
 ## Testing
 
-Vitest in both apps — `npm test` runs everything once and exits.
+Two layers, both run in CI:
 
-The current suites are deliberately thin: they prove the harness works and pin the
-data-loading behaviour the rest of the app will depend on (all 20 starter recipes and
-132 ingredient rows load, re-seeding does not duplicate, nullable quantities survive
-the round trip). Feature tests arrive with the features.
+- **Vitest** (`npm test`) for the API and the client's logic. API tests go through
+  HTTP with supertest against an in-memory database. Client tests cover formatting
+  and the failure states that are hard to set up in a real browser, such as a
+  malformed response or an API that is down.
+- **Playwright** (`npm run test:e2e`) for user journeys through the real client and
+  API: browsing, adding, editing and deleting recipes, and validation. Every page
+  and state is also scanned with axe for WCAG 2.2 AA violations. The suite starts
+  its own API on an in-memory database and its own client, on ports 4100 and 5174,
+  so it never touches your dev data or clashes with `npm run dev`.
+
+  Run `npx playwright install chromium` once before the first run.
+  `npm run e2e:ui --workspace=e2e` opens Playwright's UI mode for debugging.
+
+The E2E tests run in parallel against one API, so each one creates its own
+uniquely named recipes and deletes them afterwards. New tests must not assume the
+list of custom recipes is empty. Find elements by role and label, the way a
+screen-reader user would, rather than by CSS class.
 
 ## Data
 
