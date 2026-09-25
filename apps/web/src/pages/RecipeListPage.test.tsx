@@ -23,20 +23,22 @@ const json = (body: unknown, status = 200) =>
   Promise.resolve({ ok: status < 400, status, url: '', json: async () => body });
 
 /**
- * Answer GET /recipes and GET /preferences, and hand each PUT /preferences to
- * `onSave` so a test can control when and how saves finish.
+ * Answer GET /recipes with `recipes` and GET /preferences with `preferences`, and
+ * hand each PUT /preferences to `onSave` so a test can control when and how saves finish.
  */
 function mockApi({
+  recipes = RECIPES,
   preferences = { dietary: [] } as unknown,
   preferencesStatus = 200,
   onSave = (body: unknown) => json(body),
 }: {
+  recipes?: Recipe[];
   preferences?: unknown;
   preferencesStatus?: number;
   onSave?: (body: unknown) => Promise<unknown>;
 } = {}) {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
-    if (url.endsWith('/recipes')) return json(RECIPES);
+    if (url.endsWith('/recipes')) return json(recipes);
     if (init?.method === 'PUT') return onSave(JSON.parse(String(init.body)));
     return json(preferences, preferencesStatus);
   });
@@ -116,5 +118,32 @@ describe('RecipeListPage diet panel', () => {
 
     expect(screen.queryByRole('link', { name: 'Pie' })).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Showing 1 of 2 recipes that suit you.');
+  });
+
+  it('says so when no recipe suits the diet, and points to adding one', async () => {
+    mockApi({ preferences: { dietary: ['dairy-free'] } });
+    renderPage();
+
+    expect(await screen.findByText(/None of our recipes suit all of those/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'add a recipe of your own' })).toHaveAttribute(
+      'href',
+      '/recipes/new',
+    );
+    expect(screen.queryByRole('link', { name: 'Dahl' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Pie' })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Showing 0 of 2 recipes that suit you.');
+  });
+
+  it('says every recipe suits you when the diet hides none, with nothing to show or hide', async () => {
+    mockApi({
+      recipes: [recipe('Dahl', ['vegetarian', 'vegan']), recipe('Salad', ['vegan'])],
+      preferences: { dietary: ['vegan'] },
+    });
+    renderPage();
+
+    expect(await screen.findByRole('link', { name: 'Dahl' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('All 2 recipes suit you.');
+    expect(screen.getByRole('link', { name: 'Salad' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Show all' })).not.toBeInTheDocument();
   });
 });

@@ -11,6 +11,15 @@ describe('seedRecipes', () => {
     expect(countIngredients(db())).toBe(132);
   });
 
+  it('fills an empty database and says how many recipes it added', () => {
+    // Every test database opens seeded, so empty it first; ingredients cascade.
+    db().exec('DELETE FROM recipes');
+
+    expect(seedRecipes(db())).toBe(20);
+    expect(countRecipes(db())).toBe(20);
+    expect(countIngredients(db())).toBe(132);
+  });
+
   it('is a no-op when the database already holds recipes', () => {
     const inserted = seedRecipes(db());
 

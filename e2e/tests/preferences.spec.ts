@@ -123,4 +123,27 @@ test.describe('Dietary preferences', () => {
     await expect(yours.getByRole('link', { name: suits.name })).toBeVisible();
     await expect(page.getByRole('link', { name: doesNotSuit.name })).toHaveCount(0);
   });
+
+  test('“Your recipes” goes when none of them suit you', async ({
+    page,
+    request,
+    createRecipe,
+  }) => {
+    const recipe = await createRecipe({ dietary: [] });
+    // Guard the premise: no custom recipe left on the API may suit dairy-free.
+    const recipes = (await (await request.get('/api/recipes')).json()) as Recipe[];
+    const customSuiting = recipes.filter(
+      (other) => other.isCustom && other.dietary.includes('dairy-free'),
+    );
+    expect(customSuiting.map((other) => other.name)).toEqual([]);
+
+    await page.goto('/recipes');
+    const yours = page.getByRole('region', { name: /your recipes/i });
+    await expect(yours.getByRole('link', { name: recipe.name })).toBeVisible();
+
+    await page.getByRole('checkbox', { name: 'Dairy-free' }).check();
+
+    await expect(yours).toHaveCount(0);
+    await expect(page.getByRole('region', { name: /starter recipes/i })).toBeVisible();
+  });
 });

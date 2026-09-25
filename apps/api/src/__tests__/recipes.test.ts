@@ -85,6 +85,21 @@ describe('recipes API', () => {
       expect(response.body[0].id).toBe('nans-lentil-soup');
     });
 
+    it('lists your newest recipe first', async () => {
+      // Added in reverse alphabetical order, so name order would fail this.
+      await api()
+        .post('/recipes')
+        .send({ ...soup, name: 'Almond Biscuits' });
+      await api().post('/recipes').send(soup);
+
+      const response = await api().get('/recipes');
+
+      expect(response.body.slice(0, 2).map((recipe: Recipe) => recipe.id)).toEqual([
+        'nans-lentil-soup',
+        'almond-biscuits',
+      ]);
+    });
+
     it('gives a clashing name a unique slug', async () => {
       await api().post('/recipes').send(soup);
       const second = await api().post('/recipes').send(soup);
