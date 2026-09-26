@@ -1,4 +1,5 @@
-import { Link, Navigate, NavLink, Route, Routes } from 'react-router';
+import { Link, Navigate, Route, Routes } from 'react-router';
+import { MainNav } from './components/MainNav.tsx';
 import { NotFoundPage } from './pages/NotFoundPage.tsx';
 import { PlanPage } from './pages/PlanPage.tsx';
 import { RecipeDetailPage } from './pages/RecipeDetailPage.tsx';
@@ -24,17 +25,7 @@ export function App() {
               height="24"
             />
           </Link>
-          <nav aria-label="Main" className="app__nav">
-            <NavLink to="/recipes" className="app__nav-link">
-              Recipes
-            </NavLink>
-            <NavLink to="/plan" className="app__nav-link">
-              Your week
-            </NavLink>
-            <NavLink to="/shopping-list" className="app__nav-link">
-              Shopping list
-            </NavLink>
-          </nav>
+          <MainNav />
         </div>
       </header>
 
