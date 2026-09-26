@@ -120,18 +120,34 @@ function toAmount({ family, total, unitsSeen }: Tally): ShoppingAmount {
 
 /**
  * Round up to something you can buy: whole onions and tins, half spoons, and weights
- * and volumes to the next 5 (or 0.1 kg or l from 1000 up).
+ * and volumes to the next 5 (or 0.1 kg or l from 1000 up). Amounts already in kg
+ * or l stay in them, to the next 0.1.
  */
 function roundUp(quantity: number, unit: string | null): ShoppingAmount {
-  const family = FAMILIES.find((candidate) => candidate.base === unit || candidate.large === unit);
+  const large = FAMILIES.find((candidate) => candidate.large === unit);
+  if (large) return { quantity: ceilTo(quantity, 0.1), unit: large.large };
+  const family = FAMILIES.find((candidate) => candidate.base === unit);
   if (family) {
-    const inBase = unit === family.large ? quantity * 1000 : quantity;
-    return inBase >= 1000
-      ? { quantity: ceilTo(inBase / 1000, 0.1), unit: family.large }
-      : { quantity: ceilTo(inBase, 5), unit: family.base };
+    return quantity >= 1000
+      ? { quantity: ceilTo(quantity / 1000, 0.1), unit: family.large }
+      : { quantity: ceilTo(quantity, 5), unit: family.base };
   }
   if (unit === 'tbsp' || unit === 'tsp') return { quantity: ceilTo(quantity, 0.5), unit };
   return { quantity: ceilTo(quantity, 1), unit };
+}
+
+/**
+ * An amount in terms that can be compared with another of the same item: g and kg
+ * both become g, and ml, l, tbsp and tsp all become ml. Anything else only
+ * compares with the same unit.
+ */
+export function inBaseUnit({ quantity, unit }: ShoppingAmount): {
+  measure: string;
+  quantity: number | null;
+} {
+  const family = FAMILIES.find((candidate) => unit !== null && unit in candidate.sizes);
+  if (!family || !unit || quantity === null) return { measure: `unit:${unit}`, quantity };
+  return { measure: family.base, quantity: quantity * (family.sizes[unit] ?? 1) };
 }
 
 /**

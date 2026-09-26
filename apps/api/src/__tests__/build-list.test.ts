@@ -217,4 +217,20 @@ describe('buildShoppingList', () => {
       buildShoppingList({ meals: [meal('crumble', 6)] }, recipes).map((line) => line.item),
     ).toEqual(['apples']);
   });
+
+  it('keeps an amount already in kilograms or litres in that unit', () => {
+    const recipes = [
+      recipe('Roast', 4, [
+        { item: 'potatoes', quantity: 0.5, unit: 'kg' },
+        { item: 'stock', quantity: 0.25, unit: 'l' },
+      ]),
+    ];
+
+    const list = buildShoppingList({ meals: [meal('roast', 4)] }, recipes);
+
+    expect(list.map((line) => line.amounts)).toEqual([
+      [{ quantity: 0.5, unit: 'kg' }],
+      [{ quantity: 0.3, unit: 'l' }],
+    ]);
+  });
 });

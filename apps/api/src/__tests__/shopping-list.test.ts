@@ -157,4 +157,18 @@ describe('shopping list API', () => {
 
     expect((await line('leek'))?.ticked).toBe(false);
   });
+
+  it('keeps a tick when the week needs less, even in a different unit', async () => {
+    // Porridge 500 ml + eggs 2 tbsp shows as 530 ml; eggs alone shows as 2 tbsp.
+    await plan('monday', 'breakfast', PORRIDGE, 2);
+    await plan('tuesday', 'breakfast', EGGS, 2);
+    await tick('milk', true);
+
+    await api().delete('/plan/monday/breakfast');
+
+    expect(await line('milk')).toMatchObject({
+      amounts: [{ quantity: 2, unit: 'tbsp' }],
+      ticked: true,
+    });
+  });
 });

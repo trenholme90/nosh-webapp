@@ -3,7 +3,7 @@ import type { ShoppingAmount, ShoppingItem } from '@nosh/shared';
 import { getPlan } from '../db/plan.ts';
 import { listRecipes } from '../db/recipes.ts';
 import { getTicks, removeTick } from '../db/shopping-ticks.ts';
-import { buildShoppingList, type ShoppingNeed } from './build-list.ts';
+import { buildShoppingList, inBaseUnit, type ShoppingNeed } from './build-list.ts';
 
 /**
  * The shopping list as the person sees it: what the week needs, and which of it
@@ -35,15 +35,21 @@ export function forgetUnneededTicks(db: DatabaseSync): void {
   }
 }
 
-/** Whether what was ticked is enough for every amount needed now, unit by unit. */
+/**
+ * Whether what was ticked is enough for every amount needed now. Amounts compare
+ * across units that convert, so 530 ml ticked covers 2 tbsp needed later.
+ */
 function covers(ticked: ShoppingAmount[], needed: ShoppingAmount[]): boolean {
-  return needed.every((need) =>
-    ticked.some(
-      (got) =>
-        got.unit === need.unit &&
-        (need.quantity === null
-          ? got.quantity === null
-          : got.quantity !== null && got.quantity >= need.quantity),
-    ),
-  );
+  const got = ticked.map(inBaseUnit);
+  return needed
+    .map(inBaseUnit)
+    .every((need) =>
+      got.some(
+        (have) =>
+          have.measure === need.measure &&
+          (need.quantity === null
+            ? have.quantity === null
+            : have.quantity !== null && have.quantity >= need.quantity),
+      ),
+    );
 }

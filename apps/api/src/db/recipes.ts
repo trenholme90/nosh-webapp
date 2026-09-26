@@ -125,11 +125,18 @@ export function deleteCustomRecipe(db: DatabaseSync, id: string): WriteRefusal |
   return undefined;
 }
 
-export function inTransaction(db: DatabaseSync, work: () => void): void {
+/**
+ * Run `work` in one transaction and return its result, rolling back if it throws.
+ * Inside a transaction that is already open, it simply joins it, so a route can
+ * wrap a write that opens its own.
+ */
+export function inTransaction<T>(db: DatabaseSync, work: () => T): T {
+  if (db.isTransaction) return work();
   db.exec('BEGIN');
   try {
-    work();
+    const result = work();
     db.exec('COMMIT');
+    return result;
   } catch (error) {
     db.exec('ROLLBACK');
     throw error;

@@ -37,17 +37,23 @@ export function createPlanRouter(db: DatabaseSync): Router {
       });
     }
 
-    const saved = setPlannedMeal(db, at, result.value);
-    forgetUnneededTicks(db);
-    res.json(saved);
+    res.json(
+      inTransaction(db, () => {
+        const saved = setPlannedMeal(db, at, result.value);
+        forgetUnneededTicks(db);
+        return saved;
+      }),
+    );
   });
 
   router.delete('/plan/:day/:slot', (req, res) => {
     const at = slotFromUrl(req, res);
     if (!at) return;
 
-    removePlannedMeal(db, at);
-    forgetUnneededTicks(db);
+    inTransaction(db, () => {
+      removePlannedMeal(db, at);
+      forgetUnneededTicks(db);
+    });
     res.status(204).end();
   });
 

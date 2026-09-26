@@ -73,7 +73,7 @@ function Checklist({ savedItems }: { savedItems: ShoppingItem[] }) {
       </p>
       {failedItem && (
         <p className="notice notice--warning" role="alert">
-          Sorry, we couldn’t save that change to {failedItem}. Please try again.
+          Sorry, we couldn’t save that change to {capitalise(failedItem)}. Please try again.
         </p>
       )}
 

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { MainNav } from './MainNav.tsx';
 
@@ -13,9 +13,6 @@ const renderNav = () =>
   render(
     <MemoryRouter initialEntries={['/recipes']}>
       <MainNav />
-      <Routes>
-        <Route path="*" element={null} />
-      </Routes>
     </MemoryRouter>,
   );
 

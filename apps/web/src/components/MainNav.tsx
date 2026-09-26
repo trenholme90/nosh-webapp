@@ -28,7 +28,7 @@ export function MainNav() {
   }
 
   return (
-    <nav aria-label="Main" className="app__nav" onKeyDown={closeOnEscape}>
+    <nav aria-label="Main" onKeyDown={closeOnEscape}>
       <button
         ref={button}
         type="button"

@@ -115,7 +115,7 @@ describe('ShoppingListPage', () => {
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Milk 530 ml' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Sorry, we couldn’t save that change to milk. Please try again.',
+      'Sorry, we couldn’t save that change to Milk. Please try again.',
     );
     expect(screen.getByRole('checkbox', { name: 'Milk 530 ml' })).not.toBeChecked();
     expect(screen.getByRole('status')).toHaveTextContent('1 of 3 ticked');
