@@ -1,9 +1,11 @@
-import { Link, Navigate, NavLink, Route, Routes } from 'react-router';
+import { Link, Navigate, Route, Routes } from 'react-router';
+import { MainNav } from './components/MainNav.tsx';
 import { NotFoundPage } from './pages/NotFoundPage.tsx';
 import { PlanPage } from './pages/PlanPage.tsx';
 import { RecipeDetailPage } from './pages/RecipeDetailPage.tsx';
 import { RecipeFormPage } from './pages/RecipeFormPage.tsx';
 import { RecipeListPage } from './pages/RecipeListPage.tsx';
+import { ShoppingListPage } from './pages/ShoppingListPage.tsx';
 import './App.css';
 
 /** Application shell: brand header, then whichever page the URL names. */
@@ -23,14 +25,7 @@ export function App() {
               height="24"
             />
           </Link>
-          <nav aria-label="Main" className="app__nav">
-            <NavLink to="/recipes" className="app__nav-link">
-              Recipes
-            </NavLink>
-            <NavLink to="/plan" className="app__nav-link">
-              Your week
-            </NavLink>
-          </nav>
+          <MainNav />
         </div>
       </header>
 
@@ -42,6 +37,7 @@ export function App() {
           <Route path="/recipes/:id" element={<RecipeDetailPage />} />
           <Route path="/recipes/:id/edit" element={<RecipeFormPage />} />
           <Route path="/plan" element={<PlanPage />} />
+          <Route path="/shopping-list" element={<ShoppingListPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

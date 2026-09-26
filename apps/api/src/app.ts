@@ -4,6 +4,7 @@ import { createHealthRouter } from './routes/health.ts';
 import { createPlanRouter } from './routes/plan.ts';
 import { createPreferencesRouter } from './routes/preferences.ts';
 import { createRecipesRouter } from './routes/recipes.ts';
+import { createShoppingListRouter } from './routes/shopping-list.ts';
 
 /**
  * Build the Express app.
@@ -21,6 +22,7 @@ export function createApp(db: DatabaseSync): Express {
   app.use(createRecipesRouter(db));
   app.use(createPreferencesRouter(db));
   app.use(createPlanRouter(db));
+  app.use(createShoppingListRouter(db));
 
   app.use((_req, res) => {
     res.status(404).json({ error: 'Not found' });

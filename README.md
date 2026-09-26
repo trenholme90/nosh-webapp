@@ -6,9 +6,10 @@ shopping list with everything added up.
 Built for the Enablis engineering challenge against the brief in
 [`docs/client-brief.pdf`](docs/client-brief.pdf).
 
-> **Status: recipes, diets and the weekly plan.** You can browse the starter recipes,
-> add, edit and delete your own, set dietary preferences so only suitable recipes
-> show, and plan breakfast, lunch and dinner across the week. The shopping list is next.
+> **Status: the four baseline features.** You can browse the starter recipes, add,
+> edit and delete your own, set dietary preferences so only suitable recipes show,
+> plan breakfast, lunch and dinner across the week, and get one shopping list for
+> that week with everything added up and ready to tick off.
 
 ## Requirements
 
@@ -105,8 +106,9 @@ apps/
     src/
       app.ts           app factory — mounts routes, no listen()
       index.ts         process entrypoint — port, listen, shutdown
-      db/              schema.sql, paths, connection, seeding, recipe and plan reads and writes
-      routes/          health, recipes, preferences, plan
+      db/              schema.sql, paths, connection, seeding, recipe, plan and tick reads and writes
+      routes/          health, recipes, preferences, plan, shopping-list
+      shopping/        builds the shopping list from the plan: scaling, adding up, rounding
       __tests__/
   web/                 Vite + React + TypeScript client
     src/
@@ -193,16 +195,21 @@ what every other test sees. Those tests live in `preferences.spec.ts`, which run
 its own Playwright project after the rest of the suite, one test at a time, and
 resets the preferences around each test. The weekly plan is global in the same way,
 so `plan.spec.ts` gets a project of its own that runs after that one and clears the
-week around each test. Any future test that changes global state belongs in a project
-like that too.
+week around each test. The shopping list is worked out from that week, so
+`shopping-list.spec.ts` runs in one more project after it. Any future test that changes
+global state belongs in a project like that too.
 
 ## Data
 
 The client supplied 20 starter recipes in
 `apps/api/data/project-nosh-sample-recipes.json`. They are loaded into SQLite on first
-boot. Worth noting for the shopping-list work: ingredient names are already consistent
-and lowercased across recipes (`butter` appears in 7, `onion` in 7), so grouping can
-key on the name. Units are not consistent, though: `milk` appears in ml and tbsp,
-`coconut milk` in tins and ml, `salad leaves` in handfuls and g, and `chicken breast`
-in g and with no unit. Some ingredients also have a null quantity or unit. Summing
-quantities will therefore need unit handling, not just a group-by on name.
+boot. Ingredient names are lowercased and mostly consistent (`butter` appears in 7,
+`onion` in 7), so the shopping list groups on the name. A few differ only by plural
+(`carrot`/`carrots`, `apple`/`apples`), so a plural shares its singular's line when
+both are on the list; a name on its own is never re-spelt. Units are not consistent: `milk`
+appears in ml and tbsp, `coconut milk` in tins and ml, `salad leaves` in handfuls and g.
+The list (`apps/api/src/shopping/build-list.ts`) therefore adds up only what converts
+safely - g with kg, and ml with l, tbsp and tsp - and shows anything else side by side
+("1 tin + 200 ml") rather than guessing how big a tin is. It scales each recipe to the
+servings planned, adds up, and only then rounds up to what you can buy: whole onions
+and tins, half spoons, and weights and volumes to the next 5.

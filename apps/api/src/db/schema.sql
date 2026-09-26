@@ -1,7 +1,7 @@
 -- Nosh schema.
 --
 -- Tables arrive with the features that read them: the recipe catalogue, the
--- user's dietary preferences and the weekly plan.
+-- user's dietary preferences, the weekly plan and the shopping list's ticks.
 --
 -- mealType/dietary/tags/method are stored as JSON text rather than join tables.
 -- For a catalogue this size that keeps the schema to two tables, and SQLite's
@@ -52,4 +52,13 @@ CREATE TABLE IF NOT EXISTS plan_entries (
   recipe_id TEXT    NOT NULL REFERENCES recipes (id) ON DELETE CASCADE,
   servings  INTEGER NOT NULL CHECK (servings BETWEEN 1 AND 20),
   PRIMARY KEY (day, slot)
+);
+
+-- The shopping list itself is worked out from the plan on every request, so only
+-- ticks are stored. Each records the amounts that were ticked (JSON): the item
+-- stays ticked while the week needs no more than that, since ticking "2 onions"
+-- says nothing about a third. See apps/api/src/shopping/shopping-list.ts.
+CREATE TABLE IF NOT EXISTS shopping_ticks (
+  item    TEXT PRIMARY KEY,
+  amounts TEXT NOT NULL -- JSON array of ShoppingAmount
 );

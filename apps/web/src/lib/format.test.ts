@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatIngredient, formatQuantity, parseQuantity } from './format.ts';
+import { formatAmounts, formatIngredient, formatQuantity, parseQuantity } from './format.ts';
 
 describe('formatQuantity', () => {
   it.each([
@@ -53,5 +53,23 @@ describe('formatIngredient', () => {
     expect(formatIngredient({ item: 'olive oil', quantity: 2, unit: 'tbsp' })).toBe(
       '2 tbsp olive oil',
     );
+  });
+});
+
+describe('formatAmounts', () => {
+  it('reads each amount naturally and joins the ones that could not be added up', () => {
+    expect(formatAmounts([{ quantity: 530, unit: 'ml' }])).toBe('530 ml');
+    expect(formatAmounts([{ quantity: 3, unit: null }])).toBe('3');
+    expect(formatAmounts([{ quantity: 1.5, unit: 'tbsp' }])).toBe('1½ tbsp');
+    expect(
+      formatAmounts([
+        { quantity: 2, unit: 'tin' },
+        { quantity: 200, unit: 'ml' },
+      ]),
+    ).toBe('2 tins + 200 ml');
+  });
+
+  it('is empty when the recipes give no amount', () => {
+    expect(formatAmounts([{ quantity: null, unit: null }])).toBe('');
   });
 });

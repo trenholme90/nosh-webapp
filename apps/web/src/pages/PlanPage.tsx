@@ -186,7 +186,10 @@ function WeekPlanner({
             </div>
           </div>
         ) : (
-          <div className="page-actions">
+          <div className="page-actions button-row">
+            <Link to="/shopping-list" className="button button--primary">
+              See your shopping list
+            </Link>
             <button
               type="button"
               className="button"

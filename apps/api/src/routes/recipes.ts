@@ -5,10 +5,12 @@ import {
   createCustomRecipe,
   deleteCustomRecipe,
   getRecipe,
+  inTransaction,
   listRecipes,
   updateCustomRecipe,
   type WriteRefusal,
 } from '../db/recipes.ts';
+import { forgetUnneededTicks } from '../shopping/shopping-list.ts';
 import { sendError } from './respond.ts';
 
 /**
@@ -38,13 +40,23 @@ export function createRecipesRouter(db: DatabaseSync): Router {
     const result = validateRecipeInput(req.body);
     if (!result.ok) return sendError(res, 400, 'Recipe is not valid', result.errors);
 
-    const outcome = updateCustomRecipe(db, req.params.id, result.value);
+    // A planned recipe's ingredients feed the shopping list, so ticks are tidied with it.
+    const outcome = inTransaction(db, () => {
+      const updated = updateCustomRecipe(db, req.params.id, result.value);
+      if (typeof updated !== 'string') forgetUnneededTicks(db);
+      return updated;
+    });
     if (typeof outcome === 'string') return sendRefusal(res, outcome);
     res.json(outcome);
   });
 
   router.delete('/recipes/:id', (req, res) => {
-    const refusal = deleteCustomRecipe(db, req.params.id);
+    // Deleting takes it off the plan, and so off the shopping list.
+    const refusal = inTransaction(db, () => {
+      const refused = deleteCustomRecipe(db, req.params.id);
+      if (!refused) forgetUnneededTicks(db);
+      return refused;
+    });
     if (refusal) return sendRefusal(res, refusal);
     res.status(204).end();
   });
