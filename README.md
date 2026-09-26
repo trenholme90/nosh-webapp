@@ -203,8 +203,10 @@ global state belongs in a project like that too.
 
 The client supplied 20 starter recipes in
 `apps/api/data/project-nosh-sample-recipes.json`. They are loaded into SQLite on first
-boot. Ingredient names are consistent and lowercased across recipes (`butter` appears
-in 7, `onion` in 7), so the shopping list groups on the name. Units are not: `milk`
+boot. Ingredient names are lowercased and mostly consistent (`butter` appears in 7,
+`onion` in 7), so the shopping list groups on the name. A few differ only by plural
+(`carrot`/`carrots`, `apple`/`apples`), so a plural shares its singular's line when
+both are on the list; a name on its own is never re-spelt. Units are not consistent: `milk`
 appears in ml and tbsp, `coconut milk` in tins and ml, `salad leaves` in handfuls and g.
 The list (`apps/api/src/shopping/build-list.ts`) therefore adds up only what converts
 safely - g with kg, and ml with l, tbsp and tsp - and shows anything else side by side

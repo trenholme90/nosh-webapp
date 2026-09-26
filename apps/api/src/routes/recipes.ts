@@ -9,6 +9,7 @@ import {
   updateCustomRecipe,
   type WriteRefusal,
 } from '../db/recipes.ts';
+import { forgetUnneededTicks } from '../shopping/shopping-list.ts';
 import { sendError } from './respond.ts';
 
 /**
@@ -40,12 +41,16 @@ export function createRecipesRouter(db: DatabaseSync): Router {
 
     const outcome = updateCustomRecipe(db, req.params.id, result.value);
     if (typeof outcome === 'string') return sendRefusal(res, outcome);
+    // A planned recipe's ingredients feed the shopping list.
+    forgetUnneededTicks(db);
     res.json(outcome);
   });
 
   router.delete('/recipes/:id', (req, res) => {
     const refusal = deleteCustomRecipe(db, req.params.id);
     if (refusal) return sendRefusal(res, refusal);
+    // Deleting takes it off the plan, and so off the shopping list.
+    forgetUnneededTicks(db);
     res.status(204).end();
   });
 

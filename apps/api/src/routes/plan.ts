@@ -4,6 +4,7 @@ import { isDay, isPlanSlot, validatePlannedMeal, type PlanSlotRef } from '@nosh/
 import { clearPlan, getPlan, removePlannedMeal, setPlannedMeal } from '../db/plan.ts';
 import { getRecipe, inTransaction } from '../db/recipes.ts';
 import { clearTicks } from '../db/shopping-ticks.ts';
+import { forgetUnneededTicks } from '../shopping/shopping-list.ts';
 import { sendError } from './respond.ts';
 
 /** The weekly plan: read it, fill or empty one slot, or clear the whole week. */
@@ -36,7 +37,9 @@ export function createPlanRouter(db: DatabaseSync): Router {
       });
     }
 
-    res.json(setPlannedMeal(db, at, result.value));
+    const saved = setPlannedMeal(db, at, result.value);
+    forgetUnneededTicks(db);
+    res.json(saved);
   });
 
   router.delete('/plan/:day/:slot', (req, res) => {
@@ -44,6 +47,7 @@ export function createPlanRouter(db: DatabaseSync): Router {
     if (!at) return;
 
     removePlannedMeal(db, at);
+    forgetUnneededTicks(db);
     res.status(204).end();
   });
 

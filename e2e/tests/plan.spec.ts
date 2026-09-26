@@ -1,25 +1,11 @@
-import type { APIRequestContext } from '@playwright/test';
-import type { Day, PlanSlot } from '@nosh/shared';
 import { expect, test } from '../support/fixtures.ts';
+import { clearWeek, planMeal } from '../support/plan.ts';
 
 /*
  * Runs in the `plan` project, after the rest of the suite and one test at a time:
  * there is one week on the shared API, so every test starts and ends with it clear.
  */
 test.describe.configure({ mode: 'serial' });
-
-const clearWeek = (request: APIRequestContext) => request.delete('/api/plan');
-
-async function planMeal(
-  request: APIRequestContext,
-  day: Day,
-  slot: PlanSlot,
-  recipeId: string,
-  servings = 2,
-) {
-  const response = await request.put(`/api/plan/${day}/${slot}`, { data: { recipeId, servings } });
-  expect(response.status(), await response.text()).toBe(200);
-}
 
 test.describe('Planning your week', () => {
   test.beforeEach(async ({ request }) => {
@@ -90,8 +76,10 @@ test.describe('Planning your week', () => {
     createRecipe,
     expectNoA11yViolations,
   }) => {
-    await planMeal(request, 'monday', 'breakfast', (await createRecipe()).id);
-    await planMeal(request, 'sunday', 'breakfast', (await createRecipe()).id);
+    const monday = { day: 'monday', slot: 'breakfast' } as const;
+    const sunday = { day: 'sunday', slot: 'breakfast' } as const;
+    await planMeal(request, monday, { recipeId: (await createRecipe()).id, servings: 2 });
+    await planMeal(request, sunday, { recipeId: (await createRecipe()).id, servings: 2 });
 
     await page.goto('/plan');
     const planned = page.getByRole('region').getByRole('link');
@@ -124,7 +112,11 @@ test.describe('Planning your week', () => {
     expectNoA11yViolations,
   }) => {
     const recipe = await createRecipe();
-    await planMeal(request, 'wednesday', 'lunch', recipe.id);
+    await planMeal(
+      request,
+      { day: 'wednesday', slot: 'lunch' },
+      { recipeId: recipe.id, servings: 2 },
+    );
 
     await page.goto(`/recipes/${recipe.id}`);
     await page.getByRole('button', { name: 'Delete' }).click();

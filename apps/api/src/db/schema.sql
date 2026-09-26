@@ -55,9 +55,9 @@ CREATE TABLE IF NOT EXISTS plan_entries (
 );
 
 -- The shopping list itself is worked out from the plan on every request, so only
--- ticks are stored. Each records the amounts that were ticked (JSON): if the plan
--- later needs more of that item, the tick no longer matches and the item shows
--- unticked, since ticking "2 onions" says nothing about a third.
+-- ticks are stored. Each records the amounts that were ticked (JSON): the item
+-- stays ticked while the week needs no more than that, since ticking "2 onions"
+-- says nothing about a third. See apps/api/src/shopping/shopping-list.ts.
 CREATE TABLE IF NOT EXISTS shopping_ticks (
   item    TEXT PRIMARY KEY,
   amounts TEXT NOT NULL -- JSON array of ShoppingAmount

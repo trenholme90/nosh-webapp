@@ -36,15 +36,18 @@ interface ItemTally {
  */
 export function buildShoppingList(plan: Plan, recipes: Recipe[]): ShoppingNeed[] {
   const recipesById = new Map(recipes.map((recipe) => [recipe.id, recipe]));
+  const planned = plan.meals.flatMap((meal) => {
+    const recipe = recipesById.get(meal.recipeId);
+    return recipe ? [{ recipe, scale: meal.servings / recipe.serves }] : [];
+  });
+  const lineFor = lineNames(
+    planned.flatMap(({ recipe }) => recipe.ingredients.map((ingredient) => ingredient.item)),
+  );
   const items = new Map<string, ItemTally>();
 
-  for (const meal of plan.meals) {
-    const recipe = recipesById.get(meal.recipeId);
-    if (!recipe) continue;
-    const scale = meal.servings / recipe.serves;
-
+  for (const { recipe, scale } of planned) {
     for (const ingredient of recipe.ingredients) {
-      const item = ingredient.item.trim().toLowerCase();
+      const item = lineFor(ingredient.item);
       const tally: ItemTally = items.get(item) ?? {
         item,
         tallies: new Map(),
@@ -73,6 +76,26 @@ export function buildShoppingList(plan: Plan, recipes: Recipe[]): ShoppingNeed[]
       };
     })
     .sort((a, b) => a.item.localeCompare(b.item));
+}
+
+/**
+ * Which line each ingredient name goes on. Names are trimmed and lowercased, and a
+ * plural shares its singular's line when the singular is on the list too, so a
+ * week with "carrot" and "carrots" buys carrots once. A name on its own is left
+ * alone rather than guessing at its singular.
+ */
+function lineNames(names: string[]): (name: string) => string {
+  const tidy = (name: string) => name.trim().toLowerCase();
+  const present = new Set(names.map(tidy));
+  return (name) => {
+    const tidied = tidy(name);
+    // "potatoes" -> "potato", then "carrots" -> "carrot".
+    for (const ending of ['es', 's']) {
+      const singular = tidied.slice(0, -ending.length);
+      if (tidied.endsWith(ending) && present.has(singular)) return singular;
+    }
+    return tidied;
+  };
 }
 
 function addAmount(tally: ItemTally, quantity: number, rawUnit: string | null) {

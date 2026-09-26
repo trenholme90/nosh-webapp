@@ -186,4 +186,35 @@ describe('buildShoppingList', () => {
 
     expect(buildShoppingList({ meals: [meal('gone', 4)] }, recipes)).toEqual([]);
   });
+
+  it('puts a plural on its singular’s line when both are planned', () => {
+    const recipes = [
+      recipe('Bolognese', 4, [
+        { item: 'carrot', quantity: 1, unit: null },
+        { item: 'potato', quantity: 2, unit: null },
+      ]),
+      recipe('Pie', 4, [
+        { item: 'carrots', quantity: 2, unit: null },
+        { item: 'potatoes', quantity: 3, unit: null },
+      ]),
+    ];
+
+    const list = buildShoppingList(
+      { meals: [meal('bolognese', 4), meal('pie', 4, 'tuesday')] },
+      recipes,
+    );
+
+    expect(list).toEqual([
+      { item: 'carrot', amounts: [{ quantity: 3, unit: null }], recipes: ['Bolognese', 'Pie'] },
+      { item: 'potato', amounts: [{ quantity: 5, unit: null }], recipes: ['Bolognese', 'Pie'] },
+    ]);
+  });
+
+  it('leaves a plural alone when its singular is not on the list', () => {
+    const recipes = [recipe('Crumble', 6, [{ item: 'apples', quantity: 6, unit: null }])];
+
+    expect(
+      buildShoppingList({ meals: [meal('crumble', 6)] }, recipes).map((line) => line.item),
+    ).toEqual(['apples']);
+  });
 });

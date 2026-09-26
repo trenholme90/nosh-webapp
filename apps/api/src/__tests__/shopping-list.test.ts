@@ -104,4 +104,57 @@ describe('shopping list API', () => {
     expect(response.status).toBe(400);
     expect(response.body.fields).toEqual({ ticked: 'Ticked must be true or false' });
   });
+
+  it('forgets a tick when the item leaves the plan, even if the list is never opened', async () => {
+    // Chilli and dahl both need 300 g rice.
+    await plan('thursday', 'dinner', CHILLI, 4);
+    await tick('rice', true);
+
+    await api().delete('/plan/thursday/dinner');
+    await plan('friday', 'dinner', 'lentil-dahl', 4);
+
+    expect(await line('rice')).toMatchObject({
+      amounts: [{ quantity: 300, unit: 'g' }],
+      ticked: false,
+    });
+  });
+
+  it('keeps a tick when the week needs less of the item', async () => {
+    await plan('monday', 'dinner', SOUP, 4);
+    await plan('tuesday', 'dinner', CHILLI, 4);
+    await tick('onion', true);
+
+    await api().delete('/plan/tuesday/dinner');
+
+    expect(await line('onion')).toMatchObject({
+      amounts: [{ quantity: 1, unit: null }],
+      ticked: true,
+    });
+  });
+
+  it('forgets a tick when an edit takes the ingredient out of a planned recipe', async () => {
+    const stew = {
+      name: 'Bean Stew',
+      cuisine: 'british',
+      mealType: ['dinner'],
+      dietary: [],
+      tags: [],
+      serves: 4,
+      ingredients: [
+        { item: 'butter beans', quantity: 400, unit: 'g' },
+        { item: 'leek', quantity: 1, unit: null },
+      ],
+      method: ['Simmer.'],
+    };
+    const { body: created } = await api().post('/recipes').send(stew);
+    await plan('monday', 'dinner', created.id, 4);
+    await tick('leek', true);
+
+    await api()
+      .put(`/recipes/${created.id}`)
+      .send({ ...stew, ingredients: [stew.ingredients[0]] });
+    await api().put(`/recipes/${created.id}`).send(stew);
+
+    expect((await line('leek'))?.ticked).toBe(false);
+  });
 });
