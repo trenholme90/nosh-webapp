@@ -1,4 +1,4 @@
-import type { Day, DietaryPreference, Ingredient, MealType } from '@nosh/shared';
+import type { Day, DietaryPreference, Ingredient, MealType, ShoppingAmount } from '@nosh/shared';
 
 /** Display helpers: turn stored recipe values into the words people read. */
 
@@ -72,11 +72,24 @@ function pluraliseUnit(unit: string, quantity: number): string {
   return /(ch|sh|x)$/.test(unit) ? `${unit}es` : `${unit}s`;
 }
 
-/** "2 slices bread, toasted", "4 pork sausages", "salt". */
-export function formatIngredient({ item, quantity, unit, prep }: Ingredient): string {
+/** "200 g", "2 slices", "3", or "" when there is no amount. */
+function formatAmount({ quantity, unit }: ShoppingAmount): string {
   const parts: string[] = [];
   if (quantity !== null) parts.push(formatQuantity(quantity));
   if (unit) parts.push(quantity !== null ? pluraliseUnit(unit, quantity) : unit);
-  parts.push(item);
-  return prep ? `${parts.join(' ')}, ${prep}` : parts.join(' ');
+  return parts.join(' ');
+}
+
+/** "2 slices bread, toasted", "4 pork sausages", "salt". */
+export function formatIngredient({ item, quantity, unit, prep }: Ingredient): string {
+  const text = [formatAmount({ quantity, unit }), item].filter(Boolean).join(' ');
+  return prep ? `${text}, ${prep}` : text;
+}
+
+/**
+ * A shopping-list line's amounts: "530 ml", "3", "1 tin + 200 ml". Empty when the
+ * recipes give no amount, e.g. salt and pepper to taste.
+ */
+export function formatAmounts(amounts: ShoppingAmount[]): string {
+  return amounts.map(formatAmount).filter(Boolean).join(' + ');
 }

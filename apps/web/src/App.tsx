@@ -4,6 +4,7 @@ import { PlanPage } from './pages/PlanPage.tsx';
 import { RecipeDetailPage } from './pages/RecipeDetailPage.tsx';
 import { RecipeFormPage } from './pages/RecipeFormPage.tsx';
 import { RecipeListPage } from './pages/RecipeListPage.tsx';
+import { ShoppingListPage } from './pages/ShoppingListPage.tsx';
 import './App.css';
 
 /** Application shell: brand header, then whichever page the URL names. */
@@ -30,6 +31,9 @@ export function App() {
             <NavLink to="/plan" className="app__nav-link">
               Your week
             </NavLink>
+            <NavLink to="/shopping-list" className="app__nav-link">
+              Shopping list
+            </NavLink>
           </nav>
         </div>
       </header>
@@ -42,6 +46,7 @@ export function App() {
           <Route path="/recipes/:id" element={<RecipeDetailPage />} />
           <Route path="/recipes/:id/edit" element={<RecipeFormPage />} />
           <Route path="/plan" element={<PlanPage />} />
+          <Route path="/shopping-list" element={<ShoppingListPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

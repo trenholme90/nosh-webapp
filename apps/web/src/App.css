@@ -532,3 +532,53 @@
     grid-column: 1 / -1;
   }
 }
+
+/* ---- Shopping list ------------------------------------------------------- */
+
+.shopping-summary {
+  margin-top: var(--space-6);
+  font-weight: 700;
+}
+
+.shopping-list {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--colour-border);
+}
+
+.shopping-item {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--colour-border);
+}
+
+/* The whole row is the tap target, at least 44px tall for small phones. */
+.shopping-item__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-3);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.shopping-item__label input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--colour-accent);
+}
+
+.shopping-item__name {
+  font-weight: 700;
+}
+
+.shopping-item__for {
+  margin-left: calc(1.25rem + var(--space-3));
+  font-size: 0.875rem;
+}
+
+/* Ticked items stay where they are, so nothing moves under a thumb mid-shop. */
+.shopping-item--ticked .shopping-item__name,
+.shopping-item--ticked .shopping-item__amount {
+  text-decoration: line-through;
+}
