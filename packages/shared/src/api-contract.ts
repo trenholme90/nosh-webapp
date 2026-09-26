@@ -1,6 +1,7 @@
 import type { FieldErrors } from './validate-recipe.ts';
 import { isDay, isPlanSlot, type Plan, type PlannedMeal } from './plan.ts';
 import { isDietaryPreference, type Preferences, type Recipe } from './recipe.ts';
+import type { ShoppingAmount, ShoppingItem, ShoppingList } from './shopping-list.ts';
 
 /**
  * The HTTP contract between the client and the API: response shapes, plus runtime
@@ -66,6 +67,31 @@ export function isPlannedMeal(value: unknown): value is PlannedMeal {
 
 export function isPlan(value: unknown): value is Plan {
   return isObject(value) && Array.isArray(value['meals']) && value['meals'].every(isPlannedMeal);
+}
+
+function isShoppingAmount(value: unknown): value is ShoppingAmount {
+  if (!isObject(value)) return false;
+  const { quantity, unit } = value;
+  return (
+    (quantity === null || typeof quantity === 'number') &&
+    (unit === null || typeof unit === 'string')
+  );
+}
+
+export function isShoppingItem(value: unknown): value is ShoppingItem {
+  if (!isObject(value)) return false;
+  return (
+    typeof value['item'] === 'string' &&
+    typeof value['ticked'] === 'boolean' &&
+    Array.isArray(value['amounts']) &&
+    value['amounts'].every(isShoppingAmount) &&
+    Array.isArray(value['recipes']) &&
+    value['recipes'].every((name) => typeof name === 'string')
+  );
+}
+
+export function isShoppingList(value: unknown): value is ShoppingList {
+  return isObject(value) && Array.isArray(value['items']) && value['items'].every(isShoppingItem);
 }
 
 export function isErrorResponse(value: unknown): value is ErrorResponse {

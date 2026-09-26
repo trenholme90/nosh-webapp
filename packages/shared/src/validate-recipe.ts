@@ -1,4 +1,5 @@
 import type { PlannedMealInput } from './plan.ts';
+import type { TickInput } from './shopping-list.ts';
 import {
   DIETARY_PREFERENCES,
   MEAL_TYPES,
@@ -120,6 +121,17 @@ export function validatePlannedMeal(value: unknown): PlannedMealValidationResult
   return Object.keys(errors).length > 0
     ? { ok: false, errors }
     : { ok: true, value: { recipeId, servings } };
+}
+
+export type TickValidationResult =
+  { ok: true; value: TickInput } | { ok: false; errors: FieldErrors };
+
+/** Check an untrusted tick body: `{ ticked: true }` or `{ ticked: false }`. */
+export function validateTick(value: unknown): TickValidationResult {
+  const ticked = isRecord(value) ? value['ticked'] : undefined;
+  return typeof ticked === 'boolean'
+    ? { ok: true, value: { ticked } }
+    : { ok: false, errors: { ticked: 'Ticked must be true or false' } };
 }
 
 /** How many people a recipe or planned meal is for: the same range for both. */
