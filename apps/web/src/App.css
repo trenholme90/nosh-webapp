@@ -635,3 +635,53 @@
 .shopping-item--ticked .shopping-item__amount {
   text-decoration: line-through;
 }
+
+/* ---- Hub locator --------------------------------------------------------- */
+
+.hub-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.hub-search .field {
+  flex: 1 1 12rem;
+  max-width: 20rem;
+}
+
+/* Lines the button up with the input, below its label, while the error stays under the input. */
+.hub-search .button {
+  margin-top: calc(1.5em + var(--space-1));
+}
+
+.hub-results__heading {
+  margin-top: var(--space-6);
+}
+
+.hub-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hub-card {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+}
+
+.hub-card p {
+  margin: var(--space-1) 0 0;
+}
+
+.hub-card__name {
+  margin: 0;
+}
+
+.hub-card__distance {
+  font-weight: 700;
+}
