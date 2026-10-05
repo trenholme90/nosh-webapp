@@ -134,6 +134,23 @@ export function validateTick(value: unknown): TickValidationResult {
     : { ok: false, errors: { ticked: 'Ticked must be true or false' } };
 }
 
+export type PostcodeValidationResult =
+  { ok: true; value: string } | { ok: false; errors: FieldErrors };
+
+// Outward code (A9, A99, A9A, AA9, AA99, AA9A) then inward code (9AA).
+const UK_POSTCODE = /^[A-Z]{1,2}[0-9][A-Z0-9]?[0-9][A-Z]{2}$/;
+
+/**
+ * Check an untrusted postcode and tidy it: upper case, with a single space
+ * before the last three characters, however it was typed.
+ */
+export function validatePostcode(value: unknown): PostcodeValidationResult {
+  const squashed = typeof value === 'string' ? value.replace(/\s+/g, '').toUpperCase() : '';
+  return UK_POSTCODE.test(squashed)
+    ? { ok: true, value: `${squashed.slice(0, -3)} ${squashed.slice(-3)}` }
+    : { ok: false, errors: { postcode: 'Enter a full UK postcode, like M1 1AE' } };
+}
+
 /** How many people a recipe or planned meal is for: the same range for both. */
 function peopleCount(value: unknown, path: string, label: string, errors: FieldErrors): number {
   if (

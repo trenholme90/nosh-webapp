@@ -1,6 +1,7 @@
 import type { FieldErrors } from './validate-recipe.ts';
 import { isDay, isPlanSlot, type Plan, type PlannedMeal } from './plan.ts';
 import { isDietaryPreference, type Preferences, type Recipe } from './recipe.ts';
+import type { Hub, HubSearchResult, HubWithDistance } from './hub.ts';
 import type { ShoppingAmount, ShoppingItem, ShoppingList } from './shopping-list.ts';
 
 /**
@@ -92,6 +93,35 @@ export function isShoppingItem(value: unknown): value is ShoppingItem {
 
 export function isShoppingList(value: unknown): value is ShoppingList {
   return isObject(value) && Array.isArray(value['items']) && value['items'].every(isShoppingItem);
+}
+
+export function isHub(value: unknown): value is Hub {
+  if (!isObject(value)) return false;
+  return (
+    typeof value['id'] === 'string' &&
+    typeof value['name'] === 'string' &&
+    typeof value['addressLine'] === 'string' &&
+    typeof value['town'] === 'string' &&
+    typeof value['postcode'] === 'string' &&
+    typeof value['latitude'] === 'number' &&
+    typeof value['longitude'] === 'number' &&
+    typeof value['openingTimes'] === 'string'
+  );
+}
+
+export function isHubWithDistance(value: unknown): value is HubWithDistance {
+  return (
+    isHub(value) &&
+    typeof (value as unknown as Record<string, unknown>)['distanceMiles'] === 'number'
+  );
+}
+
+export function isHubSearchResult(value: unknown): value is HubSearchResult {
+  if (!isObject(value)) return false;
+  const hubs = value['hubs'];
+  return (
+    typeof value['postcode'] === 'string' && Array.isArray(hubs) && hubs.every(isHubWithDistance)
+  );
 }
 
 export function isErrorResponse(value: unknown): value is ErrorResponse {
