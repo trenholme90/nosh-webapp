@@ -10,6 +10,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const API_PORT = 4100;
 const WEB_PORT = 5174;
+const POSTCODES_PORT = 4101;
 const isCI = Boolean(process.env['CI']);
 
 export default defineConfig({
@@ -58,11 +59,23 @@ export default defineConfig({
   ],
 
   webServer: [
+    // Stands in for postcodes.io, which the hub locator calls from the API.
+    {
+      command: 'node e2e/support/postcodes-stub.ts',
+      cwd: '..',
+      url: `http://localhost:${POSTCODES_PORT}/postcodes/M1%201AE`,
+      env: { PORT: String(POSTCODES_PORT) },
+      reuseExistingServer: false,
+    },
     {
       command: 'npm run start --workspace=apps/api',
       cwd: '..',
       url: `http://localhost:${API_PORT}/health`,
-      env: { PORT: String(API_PORT), NOSH_DB_PATH: ':memory:' },
+      env: {
+        PORT: String(API_PORT),
+        NOSH_DB_PATH: ':memory:',
+        POSTCODES_API_URL: `http://localhost:${POSTCODES_PORT}`,
+      },
       // Never reuse: a leftover server would carry recipes from an earlier run.
       reuseExistingServer: false,
     },

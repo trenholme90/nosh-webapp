@@ -1,6 +1,8 @@
 import express, { type ErrorRequestHandler, type Express } from 'express';
 import type { DatabaseSync } from 'node:sqlite';
+import { createPostcodesIoGeocoder, type Geocoder } from './hubs/geocode.ts';
 import { createHealthRouter } from './routes/health.ts';
+import { createHubsRouter } from './routes/hubs.ts';
 import { createPlanRouter } from './routes/plan.ts';
 import { createPreferencesRouter } from './routes/preferences.ts';
 import { createRecipesRouter } from './routes/recipes.ts';
@@ -11,9 +13,13 @@ import { createShoppingListRouter } from './routes/shopping-list.ts';
  *
  * Kept separate from `index.ts` and given its database rather than importing a
  * singleton, so a test can construct an app over a throwaway database and never
- * bind a port.
+ * bind a port. The postcode lookup is passed in for the same reason: tests hand in
+ * a stub rather than calling out to the internet.
  */
-export function createApp(db: DatabaseSync): Express {
+export function createApp(
+  db: DatabaseSync,
+  geocode: Geocoder = createPostcodesIoGeocoder(),
+): Express {
   const app = express();
 
   app.use(express.json());
@@ -23,6 +29,7 @@ export function createApp(db: DatabaseSync): Express {
   app.use(createPreferencesRouter(db));
   app.use(createPlanRouter(db));
   app.use(createShoppingListRouter(db));
+  app.use(createHubsRouter(db, geocode));
 
   app.use((_req, res) => {
     res.status(404).json({ error: 'Not found' });

@@ -4,3 +4,5 @@ package-lock.json
 *.db
 playwright-report/
 test-results/
+.stryker-tmp/
+reports/

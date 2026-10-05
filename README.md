@@ -4,12 +4,14 @@ Meal planning that fits a tight budget — pick recipes, plan the week, and get 
 shopping list with everything added up.
 
 Built for the Enablis engineering challenge against the brief in
-[`docs/client-brief.pdf`](docs/client-brief.pdf).
+[`docs/client-brief.pdf`](docs/client-brief.pdf). A text copy, with our
+own feature added, is in [`docs/client-brief.md`](docs/client-brief.md).
 
-> **Status: the four baseline features.** You can browse the starter recipes, add,
+> **Status: the four baseline features, plus a hub locator.** You can browse the starter recipes, add,
 > edit and delete your own, set dietary preferences so only suitable recipes show,
 > plan breakfast, lunch and dinner across the week, and get one shopping list for
-> that week with everything added up and ready to tick off.
+> that week with everything added up and ready to tick off. Type in a postcode on
+> the "Find a hub" page to see the five closest of the 40 sample food hubs.
 
 ## Requirements
 
@@ -45,6 +47,7 @@ Run these from the repo root.
 | `npm run dev:web`      | Web client only, on <http://localhost:5173>     |
 | `npm test`             | Runs the Vitest suites in both apps and exits   |
 | `npm run test:e2e`     | Runs the Playwright end-to-end suite            |
+| `npm run mutate`       | Mutation testing with Stryker (slow; see below) |
 | `npm run typecheck`    | Type-checks every workspace                     |
 | `npm run lint`         | ESLint across the repo                          |
 | `npm run build`        | Production build of the web client              |
@@ -56,12 +59,13 @@ Run these from the repo root.
 Nothing needs configuring to run locally — the defaults _are_ the development
 setup. These environment variables are read if you set them:
 
-| Variable            | Read by    | Default                 | What it does                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------- | ---------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`              | `apps/api` | `4000`                  | Port the API listens on. Read straight from the process environment; there is no dotenv loader, so export it or prefix the command: `PORT=4100 npm run dev:api`.                                                                                                                                                                                                                               |
-| `VITE_API_BASE_URL` | `apps/web` | `/api`                  | Base URL the client prefixes onto API requests. Leave it unset in development — the client calls same-origin `/api/*` and Vite proxies them. Set it only when the API is served from another origin, and note the API has no CORS configuration yet, so that setup needs CORS added first. Vite reads it from `apps/web/.env`; copy [`apps/web/.env.example`](apps/web/.env.example) to start. |
-| `NOSH_DB_PATH`      | `apps/api` | `apps/api/data/nosh.db` | SQLite file the API opens. The E2E suite sets it to `:memory:` so every run starts from the starter recipes.                                                                                                                                                                                                                                                                                   |
-| `NOSH_API_URL`      | `apps/web` | `http://localhost:4000` | Where the Vite dev server proxies `/api/*`. The E2E suite points it at its own API.                                                                                                                                                                                                                                                                                                            |
+| Variable            | Read by    | Default                    | What it does                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------- | ---------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`              | `apps/api` | `4000`                     | Port the API listens on. Read straight from the process environment; there is no dotenv loader, so export it or prefix the command: `PORT=4100 npm run dev:api`.                                                                                                                                                                                                                               |
+| `VITE_API_BASE_URL` | `apps/web` | `/api`                     | Base URL the client prefixes onto API requests. Leave it unset in development — the client calls same-origin `/api/*` and Vite proxies them. Set it only when the API is served from another origin, and note the API has no CORS configuration yet, so that setup needs CORS added first. Vite reads it from `apps/web/.env`; copy [`apps/web/.env.example`](apps/web/.env.example) to start. |
+| `NOSH_DB_PATH`      | `apps/api` | `apps/api/data/nosh.db`    | SQLite file the API opens. The E2E suite sets it to `:memory:` so every run starts from the starter recipes.                                                                                                                                                                                                                                                                                   |
+| `POSTCODES_API_URL` | `apps/api` | `https://api.postcodes.io` | Where the hub locator looks postcodes up. The E2E suite points it at a local stub so it needs no internet.                                                                                                                                                                                                                                                                                     |
+| `NOSH_API_URL`      | `apps/web` | `http://localhost:4000`    | Where the Vite dev server proxies `/api/*`. The E2E suite points it at its own API.                                                                                                                                                                                                                                                                                                            |
 
 ## How it is put together
 
@@ -102,12 +106,13 @@ locally run demo a build step would add moving parts without adding value, so th
 ```
 apps/
   api/                 Express + TypeScript REST API
-    data/              starter recipes JSON, and the generated SQLite file
+    data/              starter recipes and sample hubs JSON, and the generated SQLite file
     src/
       app.ts           app factory — mounts routes, no listen()
       index.ts         process entrypoint — port, listen, shutdown
       db/              schema.sql, paths, connection, seeding, recipe, plan and tick reads and writes
-      routes/          health, recipes, preferences, plan, shopping-list
+      routes/          health, recipes, preferences, plan, shopping-list, hubs
+      hubs/            nearest-hub search (distance) and the postcodes.io lookup
       shopping/        builds the shopping list from the plan: scaling, adding up, rounding
       __tests__/
   web/                 Vite + React + TypeScript client
@@ -182,6 +187,25 @@ Two layers, both run in CI:
   Run `npx playwright install chromium` once before the first run.
   `npm run e2e:ui --workspace=e2e` opens Playwright's UI mode for debugging.
 
+Mutation testing (`npm run mutate`, or `npm run mutate` inside one workspace) uses
+[Stryker](https://stryker-mutator.io): it makes small changes to the source, such as
+flipping a `<` or blanking a message, and checks that a test fails each time. A
+mutant that survives points at behaviour no test pins down. It is run when a feature
+is finished rather than in CI, and a whole run is slow, so aim it at what you
+changed, for example:
+
+```bash
+cd apps/api && npx stryker run --mutate 'src/hubs/*.ts,src/routes/hubs.ts'
+```
+
+Each workspace (`apps/api`, `apps/web`, `packages/shared`) has a `stryker.config.json`
+and an HTML report in its `reports/` folder (git-ignored). Stryker runs the whole
+workspace's Vitest suite for each mutant through its command runner, rather than
+its Vitest plugin: the plugin (10.0.0) skips every test under Vitest 5, so it reports
+every mutant as surviving. Revisit that when the plugin supports Vitest 5. A few
+survivors are equivalent mutants, where the change cannot alter behaviour (for
+example `\s+` to `\s` in a global replace); those are fine to leave.
+
 The E2E tests run in parallel against one API, so each one creates its own
 uniquely named recipes and deletes them afterwards. New tests must not assume the
 list of custom recipes is empty. Find elements by role and label, the way a
@@ -213,3 +237,10 @@ safely - g with kg, and ml with l, tbsp and tsp - and shows anything else side b
 ("1 tin + 200 ml") rather than guessing how big a tin is. It scales each recipe to the
 servings planned, adds up, and only then rounds up to what you can buy: whole onions
 and tins, half spoons, and weights and volumes to the next 5.
+
+The 40 sample hubs in `apps/api/data/hubs.json` have invented names and addresses in
+real English towns and cities, from Newcastle to Truro, and are loaded into SQLite on
+first boot. A hub search turns the postcode into a location with
+[postcodes.io](https://postcodes.io) (called by the API, never the browser), then
+ranks hubs by straight-line distance. The lookup is a parameter of `createApp`, so
+tests stub it.

@@ -62,3 +62,16 @@ CREATE TABLE IF NOT EXISTS shopping_ticks (
   item    TEXT PRIMARY KEY,
   amounts TEXT NOT NULL -- JSON array of ShoppingAmount
 );
+
+-- Community food hubs, loaded from data/hubs.json on first boot. The coordinates
+-- let a search work out distances without calling anything outside the database.
+CREATE TABLE IF NOT EXISTS hubs (
+  id            TEXT PRIMARY KEY,
+  name          TEXT NOT NULL,
+  address_line  TEXT NOT NULL,
+  town          TEXT NOT NULL,
+  postcode      TEXT NOT NULL,
+  latitude      REAL NOT NULL,
+  longitude     REAL NOT NULL,
+  opening_times TEXT NOT NULL
+);

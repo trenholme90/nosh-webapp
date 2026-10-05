@@ -5,6 +5,7 @@ const LINKS = [
   { to: '/recipes', label: 'Recipes' },
   { to: '/plan', label: 'Your week' },
   { to: '/shopping-list', label: 'Shopping list' },
+  { to: '/hubs', label: 'Find a hub' },
 ];
 
 /**

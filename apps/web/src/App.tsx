@@ -1,5 +1,6 @@
 import { Link, Navigate, Route, Routes } from 'react-router';
 import { MainNav } from './components/MainNav.tsx';
+import { HubsPage } from './pages/HubsPage.tsx';
 import { NotFoundPage } from './pages/NotFoundPage.tsx';
 import { PlanPage } from './pages/PlanPage.tsx';
 import { RecipeDetailPage } from './pages/RecipeDetailPage.tsx';
@@ -38,6 +39,7 @@ export function App() {
           <Route path="/recipes/:id/edit" element={<RecipeFormPage />} />
           <Route path="/plan" element={<PlanPage />} />
           <Route path="/shopping-list" element={<ShoppingListPage />} />
+          <Route path="/hubs" element={<HubsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
