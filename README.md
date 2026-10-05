@@ -33,8 +33,8 @@ npm install     # installs every workspace and links them together
 npm run dev     # API on :4000, web client on :5173
 ```
 
-Then open <http://localhost:5173>. The page shows a connection indicator; when the
-API is up it reports how many starter recipes are loaded.
+Then open <http://localhost:5173>, which lands on the recipe list. The API's
+`/api/health` endpoint is there to check it is up.
 
 ## Scripts
 
@@ -124,7 +124,17 @@ apps/
 packages/
   shared/              domain types, recipe validation and the API contract (@nosh/shared)
 e2e/                   Playwright end-to-end suite, with axe accessibility checks
+docs/                  client brief (PDF and text) and architecture decision records
+  adr/                 one short record per significant decision
 ```
+
+### Architecture decisions
+
+Significant decisions, and what was turned down, are recorded as ADRs in
+[`docs/adr/`](docs/adr/README.md), which has an index. When a change picks a
+library, moves a boundary or sets a rule the rest of the code must follow, add
+one in the same commit or PR, using [`template.md`](docs/adr/template.md). Don't
+rewrite an accepted ADR; supersede it with a new one.
 
 ## Accessibility
 
