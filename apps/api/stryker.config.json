@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker/master/packages/core/schema/stryker-core.schema.json",
+  "testRunner": "command",
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "mutate": ["src/**/*.ts", "!src/**/*.test.ts", "!src/__tests__/**", "!src/index.ts"],
+  "reporters": ["clear-text", "progress", "html"],
+  "htmlReporter": {
+    "fileName": "reports/mutation/index.html"
+  },
+  "coverageAnalysis": "off",
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": null
+  },
+  "commandRunner": {
+    "command": "npx vitest run --bail 1"
+  }
+}

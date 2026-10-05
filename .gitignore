@@ -29,3 +29,7 @@ test-results/
 # Logs
 *.log
 npm-debug.log*
+
+# Mutation testing
+reports
+.stryker-tmp

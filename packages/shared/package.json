@@ -8,6 +8,8 @@
   },
   "types": "./src/index.ts",
   "scripts": {
+    "test": "vitest run",
+    "mutate": "stryker run",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   }
 }
