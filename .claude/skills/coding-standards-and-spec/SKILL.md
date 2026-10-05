@@ -46,11 +46,31 @@ Each smell reads _what it is_ → _how to fix_; match it against the diff:
 
 Using the /plan skill and the input from standards and spec, create a plan and implement the code changes.
 
-### 4. Code Review
+### 4. Record decisions
+
+Capture significant decisions as ADRs in `docs/adr/` as part of the change, in the same commit or PR as the code they describe. Write them while the reasoning is fresh; don't leave them for later.
+
+Write an ADR when the change:
+
+- picks a library, framework, runtime, or storage approach, or drops one;
+- sets or changes a boundary between workspaces, processes, or layers, or the API contract;
+- sets a rule the rest of the code must follow, such as how units convert or what a tick means;
+- takes on a trade-off a future reader would otherwise question, including something deliberately left out.
+
+Don't write one for routine changes that follow an existing ADR or standard.
+
+How:
+
+1. Read `docs/adr/README.md` first. If an existing ADR already covers the decision, follow it. If the change reverses one, write a new ADR that supersedes it and update the old one's status to "Superseded by NNNN". Never rewrite an accepted ADR.
+2. Copy the sections from `docs/adr/template.md` (Title, Status, Context, Decision, Consequences) into `docs/adr/NNNN-short-kebab-title.md`, using the next number in sequence.
+3. Say why, and what was turned down. If the reasoning wasn't stated and you are inferring it, mark it as inferred rather than presenting it as fact.
+4. Add a row to the table in `docs/adr/README.md`.
+
+### 5. Code Review
 
 Using the skill /code-review-standards-and-spec. If there are any major logic changes required or you are unsure about how to proceed, get a second opinion from the claude user.
 
-### 5. Pull request and merge
+### 6. Pull request and merge
 
 Use the /git-workflow skill here. Once it's passed the code review, open a PR and merge.
 
